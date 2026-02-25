@@ -10,5 +10,5 @@ vector<move> EPMv;
 
 int main() {
 	build_board();
-	displ(minimax(Board, 0, 0).F);
+	cout << minimax(Board, 0, 0, -1000, 1000).F << endl;
 }

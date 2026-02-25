@@ -46,4 +46,4 @@ void build_board();
 bool incheck(BBT CBoard, int mvnm);
 vector<BBT> back_boardgen(int i);
 vector<BBT> boardgen(BBT CBoard, int i);
-pair<BBT, int> minimax(BBT CBoard, int depth, int movn);
+pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta);

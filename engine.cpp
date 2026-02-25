@@ -5,7 +5,7 @@ extern vector<move> EPMv;
 
 // goal: 5
 // notice that we keep generating the *whole* moves each time, cache them instead.
-const int DEPTH_LIM = 4;
+const int DEPTH_LIM = 5;
 
 // a hand-crafted evaluation by me
 //
@@ -15,12 +15,6 @@ const int DEPTH_LIM = 4;
 int evaluate(BBT CBoard, int mvnm) {
 	int cw = 0, cb = 0;
 	int lc[2] = {0};
-
-	// check for checkmate/stalemate
-	vector<BBT> brds = boardgen(CBoard, mvnm);
-
-
-
 	for(int i = 0 ; i < 8 ; i++) {
 		for(int j = 0 ; j < 8 ; j++) {
 			if(CBoard[i][j].type == VIDE) continue;
@@ -64,38 +58,45 @@ int evaluate(BBT CBoard, int mvnm) {
 }
 
 // minimax!!
-pair<BBT, int> minimax(BBT CBoard, int depth, int movn) {
+// alpha beta!!
+pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta) {
 	if(depth == DEPTH_LIM) {
 		// displ(CBoard);
-		return {CBoard, evaluate(CBoard, movn)};
+		return {0, evaluate(CBoard, movn)};
 	}
 
 	vector<BBT> moves = boardgen(CBoard, movn);
 	if(moves.empty()) {
 		// displ(CBoard);
-		if(incheck(CBoard, movn)) return {CBoard, 100'000 * (movn&1 ?-1 : 1)}; // checkmate
-		return {CBoard, 0}; // stalemate
+		if(incheck(CBoard, movn)) return {0, 100'000 * (depth&1 ? -1 : 1)}; // checkmate
+		return {0, 0}; // stalemate
 	}
 
-	BBT nxtmv = moves[0];
-	int sc = minimax(nxtmv, depth+1, movn+1).S;
+	int nxtmv = 0;
+	int sc = minimax(moves[0], depth+1, movn+1, alpha, beta).S;
 	if(depth&1) {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			int nsc = minimax(moves[i], depth+1, movn+1).S;
+			int nsc = minimax(moves[i], depth+1, movn+1, alpha, beta).S;
 			if(nsc < sc) {
 				sc = nsc;
-				nxtmv = moves[i];
+				nxtmv = i;
 			}
+
+			beta = min(beta, sc);
+			if(beta <= alpha) break;
 		}
 	}
 	
 	else {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			int nsc = minimax(moves[i], depth+1, movn+1).S;
+			int nsc = minimax(moves[i], depth+1, movn+1, alpha, beta).S;
 			if(nsc > sc) {
 				sc = nsc;
-				nxtmv = moves[i];
+				nxtmv = i;
 			}
+
+			alpha = max(alpha, sc);
+			if(beta <= alpha) break;
 		}
 	}
 
