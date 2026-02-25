@@ -75,10 +75,10 @@ bool incheck(BBT CBoard, int mvnm) {
         }
     }
 
-    bool pos = 1;
+    bool pos = 0;
     for(move pl: Moves) {
         if(pl.S == kg) {
-            pos = 0;
+            pos = 1;
         }
     }
 

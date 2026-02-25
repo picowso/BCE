@@ -5,7 +5,7 @@ extern vector<move> EPMv;
 
 // goal: 5
 // notice that we keep generating the *whole* moves each time, cache them instead.
-const int DEPTH_LIM = 5;
+const int DEPTH_LIM = 4;
 
 // a hand-crafted evaluation by me
 //
@@ -24,8 +24,8 @@ int evaluate(BBT CBoard, int mvnm) {
 			else cb += tp+1;
 
 			if(tp == 0) {
-				if(color) lc[1] += 6 - i + 6*(i == 1) + 3*(i == 2);
-				else lc[0] += i - 1 + 6*(i == 6) + 3*(i == 5);
+				if(color) lc[1] += 3*(6 - i) + 10*(i == 1) + 6*(i == 2);
+				else lc[0] += 3*(i - 1) + 10*(i == 6) + 6*(i == 5);
 			}
 
 			// uhhh center is better for knights right?
