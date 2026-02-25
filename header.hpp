@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <unordered_set>
 using namespace std;
 #define F first
 #define S second
@@ -38,7 +39,11 @@ bool good(pos x, pos y);
 bool take(pos x, pos y);
 bool tng(pos x, pos y);
 void add(pos &x, pos y);
-void displ();
+void displ(BBT CBoard);
 void movegen(int movn);
 void build_board();
-vector<BBT> boardgen(int i);
+
+bool incheck(BBT CBoard, int mvnm);
+vector<BBT> back_boardgen(int i);
+vector<BBT> boardgen(BBT CBoard, int i);
+pair<BBT, int> minimax(BBT CBoard, int depth, int movn);

@@ -10,6 +10,5 @@ vector<move> EPMv;
 
 int main() {
 	build_board();
-	vector<BBT> u = boardgen(0);
-	cout << u.size() << endl;
+	displ(minimax(Board, 0, 0).F);
 }

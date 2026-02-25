@@ -31,11 +31,11 @@ void add(pos &x, pos y) {
     x.S += y.S;
 }
 
-void displ() {
+void displ(BBT CBoard) {
     // string tns = "♟♞♝♜♛♚♙♘♗♖♕♔ ";
     string tns = "pmbrqkPMBRQK ";
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) cout << tns[Board[i][j].type];
+        for(int j = 0 ; j < 8 ; j++) cout << tns[CBoard[i][j].type];
         cout << '\n';
     }
 }
@@ -64,6 +64,27 @@ void build_board() {
     Board[7][4] = {WKing, 0, -1};
 }
 
+bool incheck(BBT CBoard, int mvnm) {
+    movegen(mvnm+1);
+    pos kg;
+    for(int j = 0 ; j < 8 ; j++) {
+        for(int k = 0 ; k < 8 ; k++) {
+            if(Board[j][k].type%6 == 5 and (Board[j][k].type < 6) == (mvnm&1)) {
+                kg = {j, k};
+            }
+        }
+    }
+
+    bool pos = 1;
+    for(move pl: Moves) {
+        if(pl.S == kg) {
+            pos = 0;
+        }
+    }
+
+    return pos;
+}
+
 void movegen(int movn) {
     Moves.clear();
     EPMv.clear();
@@ -74,12 +95,12 @@ void movegen(int movn) {
             Piece cur = Board[i][j];
             int tp = cur.type % 6;
             // if(cur.type > 5) continue;
-            // 1: white, 0: black
+            // 0: white, 1: black
             // bool color = cur.type < 6;
-            int clr = 1;
+            int clr = -1;
             if(color) clr *= -1;
             if(cur.type == VIDE) continue;
-            if(cur.type/6 == color) continue;
+            if(cur.type/6 != color) continue;
             if(tp == 0) {
                 // 1-move
                 pos lcur = curr;
@@ -216,142 +237,124 @@ void movegen(int movn) {
     }
 }
 
-vector<BBT> boardgen(int i) {
+vector<BBT> back_boardgen(int i) {
     // all *legal* boards from Board
     vector<BBT> res;
     movegen(i);
     int kj = Moves.size();
-    for(move k: EPMv) Moves.push_back(k);
-    for(move p: Moves) {
-        cout << p.F.F << " " << p.F.S << " " << p.S.F << " " << p.S.S << endl;
-    }
+    vector<move> fMoves = Moves;
+    for(move k: EPMv) fMoves.push_back(k);
+    // for(move k: fMoves) {
+    //     cout << k.F.F << " " << k.F.S << " " << k.S.F << " " << k.S.S << endl;
+    // }
 
     // if(i&1) cout << "WHITE TO PLAY:\n";
     // else cout << "BLACK TO PLAY:\n";
     // string a, b; cin >> a >> b;
-    {
-        // no checks
-        movegen(i+1);
-        bool u = 1;
-        int rank = 7*((i&1));
-        for(move k: Moves) {
-            if(k.S.F == rank and 4 <= k.S.S and k.S.S <= 6) u = 0;
-        }
-
-        // empty
-        bool w = 1;
-        for(int j = 5 ; j <= 6 ; j++) {
-            if(Board[rank][j].type != VIDE) w = 0;
-        }
-
-        // cout << "H " << u << " " << w << endl;
-        // no moves
-        w = w and max(Board[rank][4].numm, Board[rank][7].numm) == 0;
-        if(w and u) {
-            BBT nBoard = Board;
-            // copy(Board.begin(), Board.end(), nBoard);
-            nBoard[rank][5] = nBoard[rank][7];
-            nBoard[rank][6] = nBoard[rank][4];
-            nBoard[rank][5].lstm = nBoard[rank][6].lstm = i;
-            nBoard[rank][5].numm++;
-            nBoard[rank][6].numm++;
-            nBoard[rank][4] = nBoard[rank][7] = {VIDE, 0, -1};
-            res.push_back(nBoard);
-            // displ();
-        }
+    
+    // Short castle
+    movegen(i+1);
+    bool u = 1;
+    int rank = 7*(!(i&1));
+    for(move k: Moves) {
+        if(k.S.F == rank and 4 <= k.S.S and k.S.S <= 6) u = 0;
     }
 
-    {
-        // no checks
-        movegen(i+1);
-        bool u = 1;
-        int rank = 7*((i&1));
-        for(move k: Moves) {
-            if(k.S.F == rank and 2 <= k.S.S and k.S.S <= 4) u = 0;
-        }
-
-        // empty
-        bool w = 1;
-        for(int j = 1 ; j <= 3 ; j++) {
-            if(Board[rank][j].type != VIDE) w = 0;
-        }
-
-        // cout << "H " << u << " " << w << endl;
-        // no moves
-        w = w and max(Board[rank][0].numm, Board[rank][4].numm) == 0;
-        if(w and u) {
-            BBT nBoard = Board;
-            // copy(Board, Board + 64, nBoard);
-            // copy(Board.begin(), Board.end(), nBoard);
-            nBoard[rank][2] = nBoard[rank][4];
-            nBoard[rank][3] = nBoard[rank][0];
-            nBoard[rank][2].lstm = nBoard[rank][3].lstm = i;
-            nBoard[rank][2].numm++;
-            nBoard[rank][3].numm++;
-            nBoard[rank][0] = nBoard[rank][4] = {VIDE, 0, -1};
-            res.push_back(nBoard);
-            // displ();
-        }
+    // empty
+    bool w = 1;
+    for(int j = 5 ; j <= 6 ; j++) {
+        if(Board[rank][j].type != VIDE) w = 0;
     }
+
+    // cout << "H " << u << " " << w << endl;
+    // no moves
+    w = w and max(Board[rank][4].numm, Board[rank][7].numm) == 0;
+    if(w and u) {
+        BBT nBoard = Board;
+        // copy(Board.begin(), Board.end(), nBoard);
+        nBoard[rank][5] = nBoard[rank][7];
+        nBoard[rank][6] = nBoard[rank][4];
+        nBoard[rank][5].lstm = nBoard[rank][6].lstm = i;
+        nBoard[rank][5].numm++;
+        nBoard[rank][6].numm++;
+        nBoard[rank][4] = nBoard[rank][7] = {VIDE, 0, -1};
+        res.push_back(nBoard);
+        // displ();
+    }
+
+    // Long Castle
+    u = 1;
+    rank = 7*(!(i&1));
+    for(move k: Moves) {
+        if(k.S.F == rank and 2 <= k.S.S and k.S.S <= 4) u = 0;
+    }
+
+    // empty
+    w = 1;
+    for(int j = 1 ; j <= 3 ; j++) {
+        if(Board[rank][j].type != VIDE) w = 0;
+    }
+
+    // cout << "H " << u << " " << w << endl;
+    // no moves
+    w = w and max(Board[rank][0].numm, Board[rank][4].numm) == 0;
+    if(w and u) {
+        BBT nBoard = Board;
+        // copy(Board, Board + 64, nBoard);
+        // copy(Board.begin(), Board.end(), nBoard);
+        nBoard[rank][2] = nBoard[rank][4];
+        nBoard[rank][3] = nBoard[rank][0];
+        nBoard[rank][2].lstm = nBoard[rank][3].lstm = i;
+        nBoard[rank][2].numm++;
+        nBoard[rank][3].numm++;
+        nBoard[rank][0] = nBoard[rank][4] = {VIDE, 0, -1};
+        res.push_back(nBoard);
+        // displ();
+    }
+    
 
     // move g = {{7 - (a[1] - '1'), a[0] - 'a'}, {7-(b[1] - '1'), b[0] - 'a'}};
     // bool fnd = 0;
+    for(int j = 0 ; j < fMoves.size() ; j++) {
+        move pl = fMoves[j];    
+        BBT olbrd = Board;
+        // copy(Board, Board + 64, olbrd);
+        // copy(Board.begin(), Board.end(), olbrd);
 
-    for(int j = 0 ; j < Moves.size() ; j++) {
-        move pl = Moves[j];
-        // valid move.
-        {
-            BBT olbrd = Board;
-            // copy(Board, Board + 64, olbrd);
-            // copy(Board.begin(), Board.end(), olbrd);
+        int clr = 1;
+        if(!(i&1)) clr *= -1;
+        Board[pl.F.F][pl.F.S] = {VIDE, 0, -1};
+        Board[pl.S.F][pl.S.S] = olbrd[pl.F.F][pl.F.S];
+        Board[pl.S.F][pl.S.S].lstm = i;
+        Board[pl.S.F][pl.S.S].numm++;
 
-            int clr = 1;
-            if(i&1) clr *= -1;
-            Board[pl.F.F][pl.F.S] = {VIDE, 0, -1};
-            Board[pl.S.F][pl.S.S] = olbrd[pl.F.F][pl.F.S];
-            Board[pl.S.F][pl.S.S].lstm = i;
-            Board[pl.S.F][pl.S.S].numm++;
-
-            if(j >= kj) {
-                Board[pl.S.F-clr][pl.S.S] = {VIDE, 0, -1}; // you ate in en passant :P
-                // cout << "H " << pl.S.F-clr << " " << pl.S.S << endl;
-            }
-
-            // king in check after the move?
-            movegen(i+1);
-            pos kg;
-            for(int i = 0 ; i < 8 ; i++) {
-                for(int j = 0 ; j < 8 ; j++) {
-                    if(Board[i][j].type%6 == 5 and (Board[i][j].type < 6) == (i&1)) {
-                        kg = {i, j};
-                    }
-                }
-            }
-
-            bool pos = 1;
-            for(move pl: Moves) {
-                if(pl.S == kg) {
-                    pos = 0;
-                }
-            }
-
-            if(pos) res.push_back(Board);
-
-            // pawn promo
-            int q = 7*(!(i&1));
-            if(Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
-                for(int j = 1 ; j <= 4 ; j++) {
-                    Board[pl.S.F][pl.S.S].type = (Type)(j + (!(i&1))*6);
-                    res.push_back(Board);
-                }
-            }
-
-            // copy(olbrd, olbrd + 64, Board);
-            // copy(olbrd.begin(), olbrd.end(), Board);
-            Board = olbrd;
-            movegen(i); // very unefficient ik
+        if(j >= kj) {
+            Board[pl.S.F-clr][pl.S.S] = {VIDE, 0, -1}; // you ate in en passant :P
         }
+
+        // king in check after the move?
+        if(!incheck(Board, i)) res.push_back(Board);
+
+        // pawn promo
+        int q = 7*(!(i&1));
+        if(Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
+            for(int j = 1 ; j <= 4 ; j++) {
+                Board[pl.S.F][pl.S.S].type = (Type)(j + (!(i&1))*6);
+                res.push_back(Board);
+            }
+        }
+
+        // copy(olbrd, olbrd + 64, Board);
+        // copy(olbrd.begin(), olbrd.end(), Board);
+        res.push_back(Board);
+
+        Board = olbrd;
     }
 
     return res;
+}
+
+vector<BBT> boardgen(BBT CBoard, int i) {
+    Board = CBoard;
+    return back_boardgen(i);
 }

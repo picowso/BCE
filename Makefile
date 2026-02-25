@@ -1,5 +1,6 @@
 all:
-	g++ main.cpp helper.cpp engine.cpp header.hpp -std=c++20 -o chess
+	clear
+	g++ -O3 main.cpp helper.cpp engine.cpp header.hpp -std=c++20 -o chess
 	./chess
 
 clean:
