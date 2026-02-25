@@ -136,12 +136,12 @@ int main() {
 		        }
 
 		        // pawn promo
-		        int q = 7*(!(i&1));
+		        int q = 7*(i&1);
 	            if(Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
 	                cout << "CHOOSE A PIECE TO PROMOTE PAWN (K, B, R, Q): " << endl;
 	                char c; cin >> c;
 	                int val = ind[c];
-	                Board[pl.S.F][pl.S.S].type = (Type)(val + (!(i&1))*6);
+	                Board[pl.S.F][pl.S.S].type = (Type)(val + (i&1)*6);
 	            }
 
 		        // copy(olbrd, olbrd + 64, Board);
