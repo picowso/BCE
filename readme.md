@@ -1,3 +1,3 @@
 # Briwats Chess Engine
 
-a functional chess engine
+a pseudo-functional and kinda unefficient chess engine

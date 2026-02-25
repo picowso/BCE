@@ -2,7 +2,7 @@
 extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
-const int DEPTH_LIM = 4;
+const int DEPTH_LIM = 5;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8] = 	{ 0,  0,  0,  0,  0,  0,  0,  0,

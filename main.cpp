@@ -1,8 +1,3 @@
-/*
-* 
-*
-*/
-
 #include "header.hpp"
 BBT Board;
 vector<move> Moves;
@@ -17,6 +12,7 @@ int main() {
 		displ(Board);
 		vector<BBT> vc = boardgen(Board, i);
 		if(i&1) {
+			cout << "Thinking...\n";
 			int mv = minimax(Board, 0, i, -1000, 1000).F;
 			Board = vc[mv];
 			continue;

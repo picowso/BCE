@@ -32,10 +32,18 @@ void add(pos &x, pos y) {
 }
 
 void displ(BBT CBoard) {
-    // string tns = "♟♞♝♜♛♚♙♘♗♖♕♔ ";
-    string tns = "pmbrqkPMBRQK ";
+    cout << "\x1B[2J\x1B[H";
+    // string tns = u8"♟♞♝♜♛♚♙♘♗♖♕♔ ";
+    // u8string tns = u8"\u2654\u2655\u2656\u2657\u2658\u2659\u265A\u265B\u265C\u265D\u265E\u265F";
+    // vector<wchar_t> tns(tnss.begin(), tnss.end());
+    // string tns = "pmbrqkPMBRQK ";
+    array<char8_t[4], 13> tns = {
+        u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
+        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
+    };
+
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) cout << tns[CBoard[i][j].type];
+        for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[CBoard[i][j].type]);
         cout << '\n';
     }
 }
@@ -317,18 +325,23 @@ vector<BBT> back_boardgen(int i) {
     // bool fnd = 0;
     for(int j = 0 ; j < fMoves.size() ; j++) {
         move pl = fMoves[j];    
-        BBT olbrd = Board;
+        // BBT olbrd = Board;
         // copy(Board, Board + 64, olbrd);
         // copy(Board.begin(), Board.end(), olbrd);
 
         int clr = 1;
         if(!(i&1)) clr *= -1;
+        Piece a = Board[pl.S.F][pl.S.S], b = Board[pl.F.F][pl.F.S];
+        Board[pl.S.F][pl.S.S] = Board[pl.F.F][pl.F.S];
         Board[pl.F.F][pl.F.S] = {VIDE, 0, -1};
-        Board[pl.S.F][pl.S.S] = olbrd[pl.F.F][pl.F.S];
         Board[pl.S.F][pl.S.S].lstm = i;
         Board[pl.S.F][pl.S.S].numm++;
 
+        bool ep = 0;
+        Piece c;
         if(j >= kj) {
+            ep = 1;
+            c = Board[pl.S.F-clr][pl.S.S];
             Board[pl.S.F-clr][pl.S.S] = {VIDE, 0, -1}; // you ate in en passant :P
         }
 
@@ -348,7 +361,9 @@ vector<BBT> back_boardgen(int i) {
         // copy(olbrd.begin(), olbrd.end(), Board);
         res.push_back(Board);
 
-        Board = olbrd;
+        Board[pl.F.F][pl.F.S] = b;
+        Board[pl.S.F][pl.S.S] = a;
+        if(ep) Board[pl.S.F-clr][pl.S.S] = c;
     }
 
     return res;
