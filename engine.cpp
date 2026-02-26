@@ -2,6 +2,7 @@
 // extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
+stack<vector<fmov>> fmoves;
 const int DEPTH_LIM = 5;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -69,13 +70,14 @@ int KV[8][8] = 	{-30,-40,-40,-50,-50,-40,-40,-30,
 int evaluate(BBT CBoard) {
 	int cw = 0, cb = 0;
 	int lc[2] = {0};
+	int val[6] = {1, 3, 3, 5, 10, 0};
 	for(int i = 0 ; i < 8 ; i++) {
 		for(int j = 0 ; j < 8 ; j++) {
 			if(CBoard[i][j].type == VIDE) continue;
 			int tp = CBoard[i][j].type%6;
 			bool color = CBoard[i][j].type/6;
-			if(CBoard[i][j].type < 6) cw += tp+1;
-			else cb += tp+1;
+			if(CBoard[i][j].type < 6) cw += val[tp];
+			else cb += val[tp];
 
 			int k = i;
 			if(color) k = 7 - i;
@@ -91,16 +93,15 @@ int evaluate(BBT CBoard) {
 	return 1000*(cw - cb) + lc[0] - lc[1];
 }
 
-
 // minimax!!
 // alpha beta!!
-pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta) {
+pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	if(depth == DEPTH_LIM) {
 		// displ(CBoard);
 		return {0, -evaluate(CBoard)};
 	}
 
-	vector<BBT> moves = boardgen(CBoard, movn);
+	vector<vector<fmov>> moves = bmovesgen(CBoard, movn);
 	if(moves.empty()) {
 		// displ(CBoard);
 		if(incheck(CBoard, movn)) return {0, 100'000 * (depth&1 ? 1 : -1)}; // checkmate
@@ -108,10 +109,14 @@ pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta) {
 	}
 
 	int nxtmv = 0;
-	int sc = minimax(moves[0], depth+1, movn+1, alpha, beta).S;
+	domove(CBoard, 1, moves[0]);
+	int sc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
+	undomove(CBoard);
 	if(depth&1) {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			int nsc = minimax(moves[i], depth+1, movn+1, alpha, beta).S;
+			domove(CBoard, 1, moves[i]);
+			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
+			undomove(CBoard);
 			if(nsc < sc) {
 				sc = nsc;
 				nxtmv = i;
@@ -124,7 +129,9 @@ pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta) {
 	
 	else {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			int nsc = minimax(moves[i], depth+1, movn+1, alpha, beta).S;
+			domove(CBoard, 1, moves[i]);
+			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
+			undomove(CBoard);
 			if(nsc > sc) {
 				sc = nsc;
 				nxtmv = i;

@@ -2,7 +2,9 @@
 
 [X] Remove Board from being global and pass by reference instead
 
-[ ] Optimize MG (move/unmove instead of storing boards!)
+[X] Optimize MG (move/unmove instead of storing boards!)
+
+<!-- [ ] Stop doing incheck() each time during minimax and bmovegen and generate a boolean board in movegen -->
 
 [ ] Implement UCI move notation (a-z)(1-8)(a-z)(1-8)[PAWN PROMO] 
 

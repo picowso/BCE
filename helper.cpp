@@ -2,7 +2,7 @@
 // extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
-
+extern stack<vector<fmov>> fmoves;
 bool samecolor(BBT &Board, pos x, pos y) {
     int a = Board[x.F][x.S].type;
     int b = Board[y.F][y.S].type;
@@ -53,25 +53,25 @@ void displ(BBT Board) {
 void build_board(BBT &Board) {
     // building the board
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) Board[i][j] = {VIDE, 0, -1};
+        for(int j = 0 ; j < 8 ; j++) Board[i][j] = EMP;
     }
 
     for (int i = 0 ; i < 8 ; i++) {
-        Board[1][i] = {BPawn, 0, -1};
-        Board[6][i] = {WPawn, 0, -1};
+        Board[1][i] = {BPawn, -1};
+        Board[6][i] = {WPawn, -1};
     }
 
-    Board[0][0] = Board[0][7] = {BRook, 0, -1};
-    Board[0][1] = Board[0][6] = {BKnight, 0, -1};
-    Board[0][2] = Board[0][5] = {BBishop, 0, -1};
-    Board[0][3] = {BQueen, 0, -1};
-    Board[0][4] = {BKing, 0, -1};
+    Board[0][0] = Board[0][7] = {BRook, -1};
+    Board[0][1] = Board[0][6] = {BKnight, -1};
+    Board[0][2] = Board[0][5] = {BBishop, -1};
+    Board[0][3] = {BQueen, -1};
+    Board[0][4] = {BKing, -1};
 
-    Board[7][0] = Board[7][7] = {WRook, 0, -1};
-    Board[7][1] = Board[7][6] = {WKnight, 0, -1};
-    Board[7][2] = Board[7][5] = {WBishop, 0, -1};
-    Board[7][3] = {WQueen, 0, -1};
-    Board[7][4] = {WKing, 0, -1};
+    Board[7][0] = Board[7][7] = {WRook, -1};
+    Board[7][1] = Board[7][6] = {WKnight, -1};
+    Board[7][2] = Board[7][5] = {WBishop, -1};
+    Board[7][3] = {WQueen, -1};
+    Board[7][4] = {WKing, -1};
 }
 
 bool incheck(BBT &Board, int mvnm) {
@@ -136,7 +136,10 @@ void movegen(BBT &Board, int movn) {
                 for(pos k: ngg) {
                     pos kcur = curr;
                     add(kcur, k);
-                    if(good(Board, curr, kcur) and Board[kcur.F-clr][kcur.S].type%6 == 0 and Board[kcur.F-clr][kcur.S].lstm == movn-1 and !samecolor(Board, curr, {kcur.F-clr, kcur.S})) EPMv.push_back({curr, kcur});
+                    if(good(Board, curr, kcur) and Board[kcur.F-clr][kcur.S].type%6 == 0
+                        and Board[kcur.F-clr][kcur.S].lstm == movn-1
+                        and !samecolor(Board, curr, {kcur.F-clr, kcur.S})
+                        and curr.F == 5-color) EPMv.push_back({curr, kcur});
                 }
             }
 
@@ -247,9 +250,9 @@ void movegen(BBT &Board, int movn) {
     }
 }
 
-vector<BBT> boardgen(BBT &Board, int i) {
-    // all *legal* boards from Board
-    vector<BBT> res;
+// generates all moves that can be rollbacked
+vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
+    vector<vector<fmov>> res;
     movegen(Board, i);
     int kj = Moves.size();
     vector<move> fMoves = Moves;
@@ -265,7 +268,7 @@ vector<BBT> boardgen(BBT &Board, int i) {
     // Short castle
     movegen(Board, i+1);
     bool u = 1;
-    int rank = 7*(!(i&1));
+    uchar rank = 7*(!(i&1));
     for(move k: Moves) {
         if(k.S.F == rank and 4 <= k.S.S and k.S.S <= 6) u = 0;
     }
@@ -278,17 +281,22 @@ vector<BBT> boardgen(BBT &Board, int i) {
 
     // cout << "H " << u << " " << w << endl;
     // no moves
-    w = w and max(Board[rank][4].numm, Board[rank][7].numm) == 0;
+    w = w and max(Board[rank][4].lstm, Board[rank][7].lstm) == -1;
     if(w and u) {
-        BBT nBoard = Board;
+        // BBT nBoard = Board;
         // copy(Board.begin(), Board.end(), nBoard);
-        nBoard[rank][5] = nBoard[rank][7];
-        nBoard[rank][6] = nBoard[rank][4];
-        nBoard[rank][5].lstm = nBoard[rank][6].lstm = i;
-        nBoard[rank][5].numm++;
-        nBoard[rank][6].numm++;
-        nBoard[rank][4] = nBoard[rank][7] = {VIDE, 0, -1};
-        res.push_back(nBoard);
+        vector<fmov> rr;
+        rr.push_back({rank, (uchar)4, EMP});
+        rr.push_back({rank, 7, EMP});
+        rr.push_back({rank, 5, Board[rank][7]});
+        rr.push_back({rank, 6, Board[rank][4]});
+        // nBoard[rank][5] = nBoard[rank][7];
+        // nBoard[rank][6] = nBoard[rank][4];
+        // nBoard[rank][5].lstm = nBoard[rank][6].lstm = i;
+        // nBoard[rank][5].numm++;
+        // nBoard[rank][6].numm++;
+        // nBoard[rank][4] = nBoard[rank][7] = EMP;
+        res.push_back(rr);
         // displ();
     }
 
@@ -307,18 +315,23 @@ vector<BBT> boardgen(BBT &Board, int i) {
 
     // cout << "H " << u << " " << w << endl;
     // no moves
-    w = w and max(Board[rank][0].numm, Board[rank][4].numm) == 0;
+    w = w and max(Board[rank][0].lstm, Board[rank][4].lstm) == -1;
     if(w and u) {
-        BBT nBoard = Board;
+        // BBT nBoard = Board;
         // copy(Board, Board + 64, nBoard);
         // copy(Board.begin(), Board.end(), nBoard);
-        nBoard[rank][2] = nBoard[rank][4];
-        nBoard[rank][3] = nBoard[rank][0];
-        nBoard[rank][2].lstm = nBoard[rank][3].lstm = i;
-        nBoard[rank][2].numm++;
-        nBoard[rank][3].numm++;
-        nBoard[rank][0] = nBoard[rank][4] = {VIDE, 0, -1};
-        res.push_back(nBoard);
+        // nBoard[rank][2] = nBoard[rank][4];
+        // nBoard[rank][3] = nBoard[rank][0];
+        // nBoard[rank][2].lstm = nBoard[rank][3].lstm = i;
+        // nBoard[rank][2].numm++;
+        // nBoard[rank][3].numm++;
+        // nBoard[rank][0] = nBoard[rank][4] = EMP;
+        vector<fmov> rr;
+        rr.push_back({rank, 0, EMP});
+        rr.push_back({rank, 4, EMP});
+        rr.push_back({rank, 2, Board[rank][4]});
+        rr.push_back({rank, 3, Board[rank][0]});
+        res.push_back(rr);
         // displ();
     }
     
@@ -333,46 +346,91 @@ vector<BBT> boardgen(BBT &Board, int i) {
 
         int clr = 1;
         if(!(i&1)) clr *= -1;
-        Piece a = Board[pl.S.F][pl.S.S], b = Board[pl.F.F][pl.F.S];
-        Board[pl.S.F][pl.S.S] = Board[pl.F.F][pl.F.S];
-        Board[pl.F.F][pl.F.S] = {VIDE, 0, -1};
-        Board[pl.S.F][pl.S.S].lstm = i;
-        Board[pl.S.F][pl.S.S].numm++;
+        vector<fmov> rr;
+        // Piece a = Board[pl.S.F][pl.S.S], b = Board[pl.F.F][pl.F.S];
+        // Board[pl.S.F][pl.S.S] = Board[pl.F.F][pl.F.S];
+        // Board[pl.F.F][pl.F.S] = EMP;
+        // Board[pl.S.F][pl.S.S].lstm = i;
+        // Board[pl.S.F][pl.S.S].numm++;
 
+        rr.push_back({pl.S.F, pl.S.S, Board[pl.F.F][pl.F.S]});
+        rr.push_back({pl.F.F, pl.F.S, EMP});
         bool ep = 0;
         Piece c;
         if(j >= kj) {
             ep = 1;
-            c = Board[pl.S.F-clr][pl.S.S];
-            Board[pl.S.F-clr][pl.S.S] = {VIDE, 0, -1}; // you ate in en passant :P
+            // c = Board[pl.S.F-clr][pl.S.S];
+            // Board[pl.S.F-clr][pl.S.S] = EMP; // you ate in en passant :P
+            rr.push_back({pl.S.F-clr, pl.S.S, EMP});
         }
 
         // king in check after the move?
-        if(!incheck(Board, i)) res.push_back(Board);
+        if(incheck(Board, i)) continue;
 
         // pawn promo
         int q = 7*(!(i&1));
-        if(Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
+        if(Board[pl.S.F][pl.S.S].type != VIDE and Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
             for(int j = 1 ; j <= 4 ; j++) {
-                Board[pl.S.F][pl.S.S].type = (Type)(j + (!(i&1))*6);
-                res.push_back(Board);
+                Piece mh = Board[pl.S.F][pl.S.S];
+                mh.type = (Type)(j + (!(i&1))*6);
+                rr.push_back({pl.S.F, pl.S.S, mh});
+                res.push_back(rr);
+                rr.pop_back();
             }
         }
 
+        else res.push_back(rr);
+
         // copy(olbrd, olbrd + 64, Board);
         // copy(olbrd.begin(), olbrd.end(), Board);
-        res.push_back(Board);
-
-        Board[pl.F.F][pl.F.S] = b;
-        Board[pl.S.F][pl.S.S] = a;
-        if(ep) Board[pl.S.F-clr][pl.S.S] = c;
+        // Board[pl.F.F][pl.F.S] = b;
+        // Board[pl.S.F][pl.S.S] = a;
+        // if(ep) Board[pl.S.F-clr][pl.S.S] = c;
     }
 
     return res;
 }
 
-// this is stupid
-// vector<BBT> boardgen(BBT CBoard, int i) {
-//     Board = CBoard;
-//     return back_boardgen(i);
-// }
+vector<BBT> boardgen(BBT &Board, int i) {
+    // all *legal* boards from Board
+    vector<BBT> res;
+    vector<vector<fmov>> mvs = bmovesgen(Board, i);
+    for(int j = 0 ; j < mvs.size() ; j++) {
+        domove(Board, 1, mvs[j]);
+        res.push_back(Board);
+        undomove(Board);
+    }
+
+    return res;
+}
+
+// domove/undomove:
+// i'll keep a stack of last copy so that when i wanna undo i check top of the stack in the dfs/minimax
+void domove(BBT &Board, bool onstack, vector<fmov> mov) {
+    vector<fmov> puh;
+    for(int i = 0 ; i < mov.size() ; i++) {
+        short a = get<0>(mov[i]), b = get<1>(mov[i]);
+        Piece c = get<2>(mov[i]), d = Board[a][b];
+        Board[a][b] = c;
+        puh.push_back({a, b, d});
+    }
+
+    if(onstack) fmoves.push(puh);
+}
+
+void undomove(BBT &Board) {
+    // shouldn't happen
+    if(fmoves.empty()) {
+        cout << "STACK EMPTY\n";
+        exit(0);
+    }
+
+    vector<fmov> puh = fmoves.top();
+    fmoves.pop();
+    // domove(Board, 0, puh); false we need reverse order
+    for(int i = puh.size() - 1 ; i >= 0 ; i--) {
+        short a = get<0>(puh[i]), b = get<1>(puh[i]);
+        Piece c = get<2>(puh[i]), d = Board[a][b];
+        Board[a][b] = c;
+    }
+}
