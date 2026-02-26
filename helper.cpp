@@ -1,9 +1,9 @@
 #include "header.hpp"
-extern BBT Board;
+// extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
 
-bool samecolor(pos x, pos y) {
+bool samecolor(BBT &Board, pos x, pos y) {
     int a = Board[x.F][x.S].type;
     int b = Board[y.F][y.S].type;
     return max(a, b) < 6 or min(a, b) > 5;
@@ -14,16 +14,18 @@ bool inboard(pos x) {
 }
 
 // is it alr to move from x to y
-bool good(pos x, pos y) {
+bool good(BBT &Board, pos x, pos y) {
     return inboard(x) and inboard(y) and Board[y.F][y.S].type == VIDE;
 }
 
-bool take(pos x, pos y) {
-    return inboard(x) and inboard(y) and !samecolor(x, y) and Board[y.F][y.S].type != VIDE and !samecolor(x, y);
+// bool take(pos x, pos y) {
+bool take(BBT &Board, pos x, pos y) {
+    return inboard(x) and inboard(y) and !samecolor(Board, x, y) and Board[y.F][y.S].type != VIDE;
 }
 
-bool tng(pos x, pos y) {
-    return inboard(x) and inboard(y) and (Board[y.F][y.S].type == VIDE or !samecolor(x, y));
+// bool tng(pos x, pos y) {
+bool tng(BBT &Board, pos x, pos y) {
+    return inboard(x) and inboard(y) and (Board[y.F][y.S].type == VIDE or !samecolor(Board, x, y));
 }
 
 void add(pos &x, pos y) {
@@ -31,7 +33,7 @@ void add(pos &x, pos y) {
     x.S += y.S;
 }
 
-void displ(BBT CBoard) {
+void displ(BBT Board) {
     cout << "\x1B[2J\x1B[H";
     // string tns = u8"♟♞♝♜♛♚♙♘♗♖♕♔ ";
     // u8string tns = u8"\u2654\u2655\u2656\u2657\u2658\u2659\u265A\u265B\u265C\u265D\u265E\u265F";
@@ -43,12 +45,12 @@ void displ(BBT CBoard) {
     };
 
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[CBoard[i][j].type]);
+        for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
         cout << '\n';
     }
 }
 
-void build_board() {
+void build_board(BBT &Board) {
     // building the board
     for(int i = 0 ; i < 8 ; i++) {
         for(int j = 0 ; j < 8 ; j++) Board[i][j] = {VIDE, 0, -1};
@@ -72,8 +74,8 @@ void build_board() {
     Board[7][4] = {WKing, 0, -1};
 }
 
-bool incheck(BBT CBoard, int mvnm) {
-    movegen(mvnm+1);
+bool incheck(BBT &Board, int mvnm) {
+    movegen(Board, mvnm+1);
     pos kg;
     for(int j = 0 ; j < 8 ; j++) {
         for(int k = 0 ; k < 8 ; k++) {
@@ -93,7 +95,7 @@ bool incheck(BBT CBoard, int mvnm) {
     return pos;
 }
 
-void movegen(int movn) {
+void movegen(BBT &Board, int movn) {
     Moves.clear();
     EPMv.clear();
     bool color = movn&1;
@@ -113,12 +115,12 @@ void movegen(int movn) {
                 // 1-move
                 pos lcur = curr;
                 lcur.F += clr;
-                if(good(curr, lcur)) Moves.push_back({curr, lcur});
+                if(good(Board, curr, lcur)) Moves.push_back({curr, lcur});
                 // 2-move
                 if(Board[curr.F][curr.S].lstm == -1) {
-                    bool cl = good(curr, lcur);
+                    bool cl = good(Board, curr, lcur);
                     lcur.F += clr;
-                    if(cl and good(curr, lcur)) Moves.push_back({curr, lcur});
+                    if(cl and good(Board, curr, lcur)) Moves.push_back({curr, lcur});
                 }
 
                 // take
@@ -126,7 +128,7 @@ void movegen(int movn) {
                 for(pos k: gg) {
                     pos kcur = curr;
                     add(kcur, k);
-                    if(take(curr, kcur)) Moves.push_back({curr, kcur});
+                    if(take(Board, curr, kcur)) Moves.push_back({curr, kcur});
                 }
 
                 // en passant
@@ -134,7 +136,7 @@ void movegen(int movn) {
                 for(pos k: ngg) {
                     pos kcur = curr;
                     add(kcur, k);
-                    if(good(curr, kcur) and Board[kcur.F-clr][kcur.S].type%6 == 0 and Board[kcur.F-clr][kcur.S].lstm == movn-1 and !samecolor(curr, {kcur.F-clr, kcur.S})) EPMv.push_back({curr, kcur});
+                    if(good(Board, curr, kcur) and Board[kcur.F-clr][kcur.S].type%6 == 0 and Board[kcur.F-clr][kcur.S].lstm == movn-1 and !samecolor(Board, curr, {kcur.F-clr, kcur.S})) EPMv.push_back({curr, kcur});
                 }
             }
 
@@ -157,8 +159,8 @@ void movegen(int movn) {
                         gg[l].S += j;
                     }
 
-                    if(tng(curr, gg[0])) Moves.push_back({curr, gg[0]});
-                    if(tng(curr, gg[1])) Moves.push_back({curr, gg[1]});
+                    if(tng(Board, curr, gg[0])) Moves.push_back({curr, gg[0]});
+                    if(tng(Board, curr, gg[1])) Moves.push_back({curr, gg[1]});
                 }
             }
 
@@ -179,7 +181,7 @@ void movegen(int movn) {
                         add(tcur, gg);
                     }
 
-                    if(take(curr, tcur)) Moves.push_back({curr, tcur});
+                    if(take(Board, curr, tcur)) Moves.push_back({curr, tcur});
                 }
             }
 
@@ -194,7 +196,7 @@ void movegen(int movn) {
                         add(tcur, k);
                     }
 
-                    if(take(curr, tcur)) Moves.push_back({curr, tcur});
+                    if(take(Board, curr, tcur)) Moves.push_back({curr, tcur});
                 }
             }
 
@@ -210,7 +212,7 @@ void movegen(int movn) {
                         add(tcur, k);
                     }
 
-                    if(take(curr, tcur)) Moves.push_back({curr, tcur});
+                    if(take(Board, curr, tcur)) Moves.push_back({curr, tcur});
                 }
 
                 for(int k = 0 ; k < 4 ; k++) {
@@ -228,7 +230,7 @@ void movegen(int movn) {
                         add(tcur, gg);
                     }
 
-                    if(take(curr, tcur)) Moves.push_back({curr, tcur});
+                    if(take(Board, curr, tcur)) Moves.push_back({curr, tcur});
                 }
             }
 
@@ -238,17 +240,17 @@ void movegen(int movn) {
                 for(pos k: gg) {
                     pos lcur = {i,j};
                     add(lcur, k);
-                    if(tng(curr, lcur)) Moves.push_back({curr, lcur});
+                    if(tng(Board, curr, lcur)) Moves.push_back({curr, lcur});
                 }
             }
         }
     }
 }
 
-vector<BBT> back_boardgen(int i) {
+vector<BBT> boardgen(BBT &Board, int i) {
     // all *legal* boards from Board
     vector<BBT> res;
-    movegen(i);
+    movegen(Board, i);
     int kj = Moves.size();
     vector<move> fMoves = Moves;
     for(move k: EPMv) fMoves.push_back(k);
@@ -261,7 +263,7 @@ vector<BBT> back_boardgen(int i) {
     // string a, b; cin >> a >> b;
     
     // Short castle
-    movegen(i+1);
+    movegen(Board, i+1);
     bool u = 1;
     int rank = 7*(!(i&1));
     for(move k: Moves) {
@@ -369,7 +371,8 @@ vector<BBT> back_boardgen(int i) {
     return res;
 }
 
-vector<BBT> boardgen(BBT CBoard, int i) {
-    Board = CBoard;
-    return back_boardgen(i);
-}
+// this is stupid
+// vector<BBT> boardgen(BBT CBoard, int i) {
+//     Board = CBoard;
+//     return back_boardgen(i);
+// }

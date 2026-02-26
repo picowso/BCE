@@ -1,13 +1,17 @@
 #include "header.hpp"
-BBT Board;
 vector<move> Moves;
 vector<move> EPMv;
 int ind[255] = {};
+void testing(BBT Board) {
+	cout << minimax(Board, 0, 0, -1000, 1000).S << endl;
+}
 
-// BCE playing as black
 int main() {
+	BBT Board;
+	build_board(Board);
+	testing(Board);
+	return 0;
 	ind['K'] = 1; ind['B'] = 2; ind['R'] = 3; ind['Q'] = 4;
-	build_board();
 	for(int i = 0 ; ; i++) {
 		displ(Board);
 		vector<BBT> vc = boardgen(Board, i);
@@ -18,7 +22,7 @@ int main() {
 			continue;
 		}
 
-	    movegen(i);
+	    movegen(Board, i);
 	    int kj = Moves.size();
 	    vector<move> fMoves = Moves;
 	    for(move k: EPMv) fMoves.push_back(k);
@@ -31,7 +35,7 @@ int main() {
 	    string a, b; cin >> a >> b;
 	    // Short castle
 		if(a == "SC" and b == "SC") {
-		    movegen(i+1);
+		    movegen(Board, i+1);
 		    bool u = 1;
 		    int rank = 7*(!(i&1));
 		    for(move k: Moves) {

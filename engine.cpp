@@ -1,5 +1,5 @@
 #include "header.hpp"
-extern BBT Board;
+// extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
 const int DEPTH_LIM = 5;

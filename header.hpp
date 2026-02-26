@@ -33,17 +33,16 @@ struct Piece {
 
 using BBT = array<array<Piece, 8>, 8>;
 
-bool samecolor(pos x, pos y);
+bool samecolor(BBT &CBoard, pos x, pos y);
 bool inboard(pos x);
-bool good(pos x, pos y);
-bool take(pos x, pos y);
-bool tng(pos x, pos y);
+bool good(BBT &CBoard,pos x, pos y);
+bool take(BBT &CBoard,pos x, pos y);
+bool tng(BBT &CBoard,pos x, pos y);
 void add(pos &x, pos y);
 void displ(BBT CBoard);
-void movegen(int movn);
-void build_board();
+void movegen(BBT &CBoard, int movn);
+void build_board(BBT &CBoard);
 
-bool incheck(BBT CBoard, int mvnm);
-vector<BBT> back_boardgen(int i);
-vector<BBT> boardgen(BBT CBoard, int i);
+bool incheck(BBT &CBoard, int mvnm);
+vector<BBT> boardgen(BBT &CBoard, int i);
 pair<int, int> minimax(BBT CBoard, int depth, int movn, int alpha, int beta);

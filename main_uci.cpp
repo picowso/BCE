@@ -1,6 +1,6 @@
 // TODO: support UCI
 #include "header.hpp"
-BBT Board;
+// BBT Board;
 vector<move> Moves;
 vector<move> EPMv;
 int ind[255] = {};
