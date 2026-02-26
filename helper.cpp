@@ -297,7 +297,11 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
 
         // king in check after the move?
         domove(Board, 1, rr);
-        if(incheck(Board, i)) continue;
+        if(incheck(Board, i)) {
+            undomove(Board);
+            continue;
+        }
+
         undomove(Board);
 
         // pawn promo
@@ -385,15 +389,19 @@ vector<string> ucimovesgen(BBT &Board, int i) {
         }
 
         // king in check after the move?
-        domove(Board, 1, rw);
-        if(incheck(Board, i)) continue;
+        domove(BFs have terrible compressionoard, 1, rw);
+        if(incheck(Board, i+1)) {
+            undomove(Board);
+            continue;
+        }
+
         undomove(Board);
 
         // pawn promo
         int q = 7*(!(i&1));
         char ind[4] = {'n', 'b', 'r', 'q'};
         if(Board[pl.S.F][pl.S.S].type != VIDE and Board[pl.S.F][pl.S.S].type%6 == 0 and pl.S.F == q) {
-            for(int j = 1 ; j <= 4 ; j++) {
+            for(int j = 0 ; j < 4 ; j++) {
                 // Piece mh = Board[pl.S.F][pl.S.S];
                 // mh.type = (Type)(j + (!(i&1))*6);
                 rr.push_back(ind[j]);
