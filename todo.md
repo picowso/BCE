@@ -10,6 +10,6 @@
 
 [ ] Implement UCI and hook it up with Lichess
 
-[ ] Implement BitBoard representation
+<!-- [ ] Implement BitBoard representation -->
 
 [ ] Use a NNUE/NN/MLP/something instead of the hand-made evaluation function, a good dataset for this might be +3000 lichess rapid games.

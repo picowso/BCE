@@ -9,7 +9,8 @@ using namespace std;
 #define S second
 #define EMP {VIDE, -1}
 #define move pair<pair<int,int>, pair<int,int>>
-// int move_num = 0;
+
+#define INF 10000000
 using pos = pair<int, int>;
 enum Type {
     WPawn = 0,
@@ -56,6 +57,7 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i);
 vector<BBT> boardgen(BBT &Board, int i);
 void domove(BBT &Board, bool onstack, vector<fmov> mov);
 void undomove(BBT &Board);
+vector<string> ucimovesgen(BBT &Board, int i);
 
 // engine
 pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta);
