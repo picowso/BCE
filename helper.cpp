@@ -33,15 +33,16 @@ void add(pos &x, pos y) {
 
 void displ(BBT Board) {
     // string tns = u8"♟♞♝♜♛♚♙♘♗♖♕♔ ";
-    // string tns = "pmbrqkPMBRQK ";
+    string tns = "pmbrqkPMBRQK ";
     // cout << "\x1B[2J\x1B[H";
-    array<char8_t[4], 13> tns = {
-        u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
-        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
-    };
+    // array<char8_t[4], 13> tns = {
+    //     u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
+    //     u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
+    // };
 
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
+        // for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
+        for(int j = 0 ; j < 8 ; j++) cout << tns[Board[i][j].type];
         cout << endl;
     }
 }
@@ -299,12 +300,9 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
 
         // king in check after the move?
         domove(Board, 1, rr);
-        if(incheck(Board, i)) {
-            undomove(Board);
-            continue;
-        }
-
+        bool u = incheck(Board, i+1);
         undomove(Board);
+        if(u) continue;
 
         // pawn promo
         int q = 7*(!(i&1));
@@ -381,23 +379,15 @@ vector<string> ucimovesgen(BBT &Board, int i) {
         string rr = {pl.F.S + 'a', 7 - pl.F.F + '1', pl.S.S + 'a', 7 - pl.S.F + '1'};
         // cout << pl.F.F << " " << pl.F.S << " " << pl.S.F << " " << pl.S.S << " " << rr << endl;
         vector<fmov> rw;
+        if(j >= kj) rw.push_back({pl.S.F-clr, pl.S.S, EMP});
         rw.push_back({pl.S.F, pl.S.S, Board[pl.F.F][pl.F.S]});
         rw.push_back({pl.F.F, pl.F.S, EMP});
-        bool ep = 0;
-        Piece c;
-        if(j >= kj) {
-            ep = 1;
-            rw.push_back({pl.S.F-clr, pl.S.S, EMP});
-        }
 
         // king in check after the move?
         domove(Board, 1, rw);
-        if(incheck(Board, i+1)) {
-            undomove(Board);
-            continue;
-        }
-
+        bool u = incheck(Board, i+1);
         undomove(Board);
+        if(u) continue;
 
         // pawn promo
         int q = 7*(!(i&1));

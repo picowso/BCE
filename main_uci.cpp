@@ -71,9 +71,10 @@ int main() {
 			int ind = minimax(Board, 0, movn, -INF, INF).F;
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
-			// for(string u: cur) cout << u << endl;
-			// cout << cur.size() << " " << ind << endl;
+			for(string u: cur) cout << u << endl;
+			cout << act.size() << " " << cur.size() << " " << ind << endl;
 			// debug
+			// cout << act.size() << " " << ind << endl;
 			cout << "bestmove " << cur[ind] << endl;
 			// domove(Board, 1, act[ind]);
 			// displ(Board);
