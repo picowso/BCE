@@ -1,23 +1,30 @@
+// #pragma GCC target("avx2")
+#pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
 #include "header.hpp"
 vector<move> Moves;
 vector<move> EPMv;
+pos KPoses[2];
 int ind[255] = {};
+int CNT = 0;
 void debug(BBT Board, int i) {
 	cout << minimax(Board, 0, 0, -1000, 1000).S << endl;
 	// exit(0);
-	vector<BBT> vc = boardgen(Board, i);
-	cout << vc.size() << endl;
-	for(int i = 0 ; i < vc.size() ; i++) {
-		cout << i << endl;
-		displ(vc[i]);
-	}
+	// vector<BBT> vc = boardgen(Board, i);
+	// cout << vc.size() << endl;
+	// for(int i = 0 ; i < vc.size() ; i++) {
+	// 	cout << i << endl;
+	// 	displ(vc[i]);
+	// }
 
-	// exit(0);
+	cout << CNT << endl;
+	exit(0);
 }
 
 int main() {
 	BBT Board;
 	build_board(Board);
+	// debug(Board, 0);
 	ind['K'] = 1; ind['B'] = 2; ind['R'] = 3; ind['Q'] = 4;
 	for(int i = 0 ; ; i++) {
 		displ(Board);

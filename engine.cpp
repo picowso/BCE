@@ -2,8 +2,9 @@
 // extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
+extern int CNT;
 stack<vector<fmov>> fmoves;
-const int DEPTH_LIM = 5;
+const int DEPTH_LIM = 6;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8] = 	{ 0,  0,  0,  0,  0,  0,  0,  0,
@@ -60,13 +61,10 @@ int KV[8][8] = 	{-30,-40,-40,-50,-50,-40,-40,-30,
 				 20, 20,  0,  0,  0,  0, 20, 20,
 				 20, 30, 10,  0,  0, 10, 30, 20};
 
-
-
-// a hand-crafted evaluation by me
-//
 // TODO:
 // - involve NNs
 // - tweak it more to increase elo :pray:
+int Pvals[13] = {10, 32, 33, 50, 100, 10000, 10, 32, 33, 50, 100, 10000, 0};
 int evaluate(BBT CBoard) {
 	int cw = 0, cb = 0;
 	int lc[2] = {0};
@@ -74,10 +72,11 @@ int evaluate(BBT CBoard) {
 	for(int i = 0 ; i < 8 ; i++) {
 		for(int j = 0 ; j < 8 ; j++) {
 			if(CBoard[i][j].type == VIDE) continue;
-			int tp = CBoard[i][j].type%6;
+			int tp = CBoard[i][j].type;
+			if(tp > 5) tp -= 6;
 			bool color = CBoard[i][j].type/6;
-			if(CBoard[i][j].type < 6) cw += val[tp];
-			else cb += val[tp];
+			if(CBoard[i][j].type < 6) cw += Pvals[tp];
+			else cb += Pvals[tp];
 
 			int k = i;
 			if(color) k = 7 - i;
@@ -90,12 +89,13 @@ int evaluate(BBT CBoard) {
 		}
 	}
 
-	return 1000*(cw - cb) + lc[0] - lc[1];
+	return 10*(cw - cb) + lc[0] - lc[1];
 }
 
 // minimax!!
 // alpha beta!!
 pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
+	CNT++;
 	if(depth == DEPTH_LIM) {
 		// displ(CBoard);
 		return {0, -evaluate(CBoard)};
@@ -108,13 +108,23 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 		return {0, 0}; // stalemate
 	}
 
+	// move ordering
+	vector<int> movo(moves.size());
+	for(int i = 0 ; i < moves.size() ; i++) movo[i] = i;
+	sort(movo.begin(), movo.end(), [&](int i, int j) {
+		int ai = get<0>(moves[i][0]), aj = get<1>(moves[i][0]);
+		int bi = get<0>(moves[j][0]), bj = get<1>(moves[j][0]);
+		uchar a = CBoard[ai][aj].type, b = CBoard[bi][bj].type;
+		return Pvals[a] > Pvals[b];
+	});
+
 	int nxtmv = 0;
-	domove(CBoard, 1, moves[0]);
+	domove(CBoard, 1, moves[movo[0]]);
 	int sc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 	undomove(CBoard);
 	if(depth&1) {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			domove(CBoard, 1, moves[i]);
+			domove(CBoard, 1, moves[movo[i]]);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);
 			if(nsc < sc) {
@@ -129,7 +139,7 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	
 	else {
 		for(int i = 1 ; i < moves.size() ; i++) {
-			domove(CBoard, 1, moves[i]);
+			domove(CBoard, 1, moves[movo[i]]);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);
 			if(nsc > sc) {
@@ -144,49 +154,3 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 
 	return {nxtmv, sc};
 }
-
-// suicidal knight eval :praycat:
-// int evaluatev1(BBT CBoard, int mvnm) {
-// 	int cw = 0, cb = 0;
-// 	int lc[2] = {0};
-// 	for(int i = 0 ; i < 8 ; i++) {
-// 		for(int j = 0 ; j < 8 ; j++) {
-// 			if(CBoard[i][j].type == VIDE) continue;
-// 			int tp = CBoard[i][j].type%6;
-// 			bool color = CBoard[i][j].type/6;
-// 			if(CBoard[i][j].type < 6) cw += tp+1;
-// 			else cb += tp+1;
-
-// 			if(tp == 0) {
-// 				if(color) lc[1] += 3*(6 - i) + 10*(i == 1) + 6*(i == 2);
-// 				else lc[0] += 3*(i - 1) + 10*(i == 6) + 6*(i == 5);
-// 			}
-
-// 			// uhhh center is better for knights right?
-// 			// if(tp == 1) lc[color] += (abs(i-4) + abs(j-4))/2;
-// 			if(tp == 2) {
-// 				// bishop is weird, its most useful as a sniper
-// 				// so ima claim sides are better?
-// 				lc[color] += max(abs(j), abs(j-7))/2 + max(abs(i), abs(i-7))/2;
-// 			}
-
-// 			if(tp == 3) {
-// 				// rook is good in sides too
-// 				lc[color] += max(abs(j), abs(j-7))/2 + max(abs(i), abs(i-7))/2;
-// 			}
-
-// 			if(tp == 4) {
-// 				// queen good in center
-// 				lc[color] += 3*(abs(i-4) + abs(j-4));
-// 			}
-
-// 			if(tp == 5) {
-// 				// just stay in your place bro :pray:
-// 				// this feels bad for endgames, but should work with enough depth traversal
-// 				lc[color] += i == color*7;
-// 			}
-// 		}
-// 	}
-
-// 	return (17*cw - 17*cb) + lc[1] - lc[0];
-// }

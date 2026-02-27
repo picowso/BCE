@@ -4,15 +4,17 @@
 #include <array>
 #include <stack>
 #include <tuple>
+#include <algorithm>
 using namespace std;
 #define F first
 #define S second
-#define EMP {VIDE, -1}
+#define EMP {VIDE, 0}
 #define move pair<pair<int,int>, pair<int,int>>
+using uchar = unsigned char;
 
 #define INF 10000000
 using pos = pair<int, int>;
-enum Type {
+enum Type : uchar {
     WPawn = 0,
     WKnight = 1,
     WBishop = 2,
@@ -31,11 +33,9 @@ enum Type {
 struct Piece {
     Type type;
     // int numm; // number of times moves
-    short lstm = -1; // last time moved
+    uchar lstm = 0; // last time moved
 };
 
-// we'll have too much of it so uchar is good
-using uchar = unsigned char;
 using fmov = tuple<uchar, uchar, Piece>;
 
 using BBT = array<array<Piece, 8>, 8>;
@@ -55,7 +55,7 @@ void movegen(BBT &CBoard, int movn);
 void build_board(BBT &CBoard);
 vector<vector<fmov>> bmovesgen(BBT &Board, int i);
 vector<BBT> boardgen(BBT &Board, int i);
-void domove(BBT &Board, bool onstack, vector<fmov> mov);
+void domove(BBT &Board, bool onstack, vector<fmov> &mov);
 void undomove(BBT &Board);
 vector<string> ucimovesgen(BBT &Board, int i);
 
