@@ -1,6 +1,7 @@
 // #pragma GCC target("avx2")
-#pragma GCC optimize("O3")
-#pragma GCC optimize("unroll-loops")
+#pragma GCC optimize("Ofast")
+#pragma GCC optimize ("unroll-loops")
+// #pragma GCC target("mmx")
 #include "header.hpp"
 vector<move> Moves;
 vector<move> EPMv;
@@ -24,7 +25,7 @@ void debug(BBT Board, int i) {
 int main() {
 	BBT Board;
 	build_board(Board);
-	// debug(Board, 0);
+	debug(Board, 0);
 	ind['K'] = 1; ind['B'] = 2; ind['R'] = 3; ind['Q'] = 4;
 	for(int i = 0 ; ; i++) {
 		displ(Board);

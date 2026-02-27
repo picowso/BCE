@@ -89,7 +89,7 @@ int evaluate(BBT CBoard) {
 		}
 	}
 
-	return 10*(cw - cb) + lc[0] - lc[1];
+	return 100*(cw - cb) + lc[0] - lc[1];
 }
 
 // minimax!!
@@ -110,26 +110,33 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 
 	// move ordering
 	vector<int> movo(moves.size());
-	for(int i = 0 ; i < moves.size() ; i++) movo[i] = i;
+	// luck(moves.size());
+	for(int i = 0 ; i < moves.size() ; i++) {
+		movo[i] = i;
+		// luck[i] = rand()&3;
+	}
+
 	sort(movo.begin(), movo.end(), [&](int i, int j) {
 		int ai = get<0>(moves[i][0]), aj = get<1>(moves[i][0]);
 		int bi = get<0>(moves[j][0]), bj = get<1>(moves[j][0]);
 		uchar a = CBoard[ai][aj].type, b = CBoard[bi][bj].type;
-		return Pvals[a] > Pvals[b];
+		if(a==12)a=0;
+		if(b==12)b=0;
+		return a > b; // heuristics!
 	});
 
-	int nxtmv = 0;
-	domove(CBoard, 1, moves[movo[0]]);
+	int nxtmv = movo[0];
+	domove(CBoard, 1, moves[movo[0]], movn);
 	int sc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 	undomove(CBoard);
 	if(depth&1) {
-		for(int i = 1 ; i < moves.size() ; i++) {
-			domove(CBoard, 1, moves[movo[i]]);
+		for(int i = 1 ; i < min(20, (int)moves.size()) ; i++) {
+			domove(CBoard, 1, moves[movo[i]], movn);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);
 			if(nsc < sc) {
 				sc = nsc;
-				nxtmv = i;
+				nxtmv = movo[i];
 			}
 
 			beta = min(beta, sc);
@@ -138,13 +145,13 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	}
 	
 	else {
-		for(int i = 1 ; i < moves.size() ; i++) {
-			domove(CBoard, 1, moves[movo[i]]);
+		for(int i = 1 ; i < min(20, (int)moves.size()) ; i++) {
+			domove(CBoard, 1, moves[movo[i]], movn);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);
 			if(nsc > sc) {
 				sc = nsc;
-				nxtmv = i;
+				nxtmv = movo[i];
 			}
 
 			alpha = max(alpha, sc);

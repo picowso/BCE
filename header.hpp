@@ -55,7 +55,7 @@ void movegen(BBT &CBoard, int movn);
 void build_board(BBT &CBoard);
 vector<vector<fmov>> bmovesgen(BBT &Board, int i);
 vector<BBT> boardgen(BBT &Board, int i);
-void domove(BBT &Board, bool onstack, vector<fmov> &mov);
+void domove(BBT &Board, bool onstack, vector<fmov> &mov, int movn = -1);
 void undomove(BBT &Board);
 vector<string> ucimovesgen(BBT &Board, int i);
 

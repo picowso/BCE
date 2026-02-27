@@ -34,7 +34,7 @@ void add(pos &x, pos y) {
 void displ(BBT Board) {
     // string tns = u8"♟♞♝♜♛♚♙♘♗♖♕♔ ";
     // string tns = "pmbrqkPMBRQK ";
-    cout << "\x1B[2J\x1B[H";
+    // cout << "\x1B[2J\x1B[H";
     array<char8_t[4], 13> tns = {
         u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
         u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
@@ -42,7 +42,7 @@ void displ(BBT Board) {
 
     for(int i = 0 ; i < 8 ; i++) {
         for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
-        cout << '\n';
+        cout << endl;
     }
 }
 
@@ -433,7 +433,7 @@ vector<BBT> boardgen(BBT &Board, int i) {
 
 // domove/undomove:
 // i'll keep a stack of last copy so that when i wanna undo i check top of the stack in the dfs/minimax
-void domove(BBT &Board, bool onstack, vector<fmov> &mov) {
+void domove(BBT &Board, bool onstack, vector<fmov> &mov, int movn) {
     vector<fmov> puh;
     for(int i = 0 ; i < mov.size() ; i++) {
         short a = get<0>(mov[i]), b = get<1>(mov[i]);
@@ -442,6 +442,7 @@ void domove(BBT &Board, bool onstack, vector<fmov> &mov) {
         if(c.type == 5) KPoses[0] = {a, b};
         if(c.type == 1) KPoses[1] = {a, b};
         Board[a][b] = c;
+        if(movn!=-1) Board[a][b].lstm = movn;
     }
 
     if(onstack) fmoves.push(puh);

@@ -1,6 +1,10 @@
+#pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
 #include "header.hpp"
 vector<move> Moves;
 vector<move> EPMv;
+pos KPoses[2];
+int CNT = 0;
 int ind[255] = {};
 
 // https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
@@ -58,14 +62,23 @@ int main() {
 				bool fnd = 0;
 				for(int j = 0 ; j < cur.size() ; j++) {
 					if(cur[j] == moves[i]) {
-						domove(Board, 0, act[j]);
+						domove(Board, 0, act[j], i);
 					}
 				}
 			}
 
+			displ(Board);
 			int ind = minimax(Board, 0, movn, -INF, INF).F;
 			vector<string> cur = ucimovesgen(Board, movn);
+			vector<vector<fmov>> act = bmovesgen(Board, movn);
+			// for(string u: cur) cout << u << endl;
+			// cout << cur.size() << " " << ind << endl;
+			// debug
 			cout << "bestmove " << cur[ind] << endl;
+			// domove(Board, 1, act[ind]);
+			// displ(Board);
+			// cout << flush;
+			// undomove(Board);
 		}
 	}
 }
