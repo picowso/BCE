@@ -3,9 +3,9 @@
 extern vector<move> Moves;
 extern vector<move> EPMv;
 extern int CNT;
-extern bool is_white;
+// extern bool is_white;
 stack<vector<fmov>> fmoves;
-const int DEPTH_LIM = 4;
+const int DEPTH_LIM = 5;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8] = 	{ 0,  0,  0,  0,  0,  0,  0,  0,
@@ -109,15 +109,18 @@ int evaluate(BBT CBoard) {
 // alpha beta!!
 array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	CNT++;
+	// int u = -1;
+	// if(is_white) u *= -1;
+	bool is_white = (movn-depth)&1;
 	if(depth == DEPTH_LIM) {
 		// displ(CBoard);
-		return {0, evaluate(CBoard) * (movn&1 ^ is_white ? 1 : -1), depth};
+		return {0, evaluate(CBoard)};
 	}
 
 	vector<vector<fmov>> moves = bmovesgen(CBoard, movn);
 	if(moves.empty()) {
 		// displ(CBoard);
-		if(incheck(CBoard, movn)) return {0, INF * (movn&1 ^ is_white ? 1 : -1), depth}; // checkmate
+		if(incheck(CBoard, movn)) return {0, INF, depth}; // checkmate
 		return {0, 0}; // stalemate
 	}
 
@@ -188,5 +191,5 @@ array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 		}
 	}
 
-	return {nxtmv, sc};
+	return {nxtmv, sc, depth};
 }
