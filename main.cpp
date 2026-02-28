@@ -1,3 +1,4 @@
+// main.cpp: CLI interface for the engine
 #pragma GCC optimize("Ofast")
 #pragma GCC optimize ("unroll-loops")
 #include "header.hpp"
@@ -6,17 +7,21 @@ vector<move> EPMv;
 pos KPoses[2];
 int ind[255] = {};
 int CNT = 0;
+extern unordered_map<ull, short> hashes;
 
 int main() {
 	BBT Board;
 	build_board(Board);
-	ind['K'] = 1; ind['B'] = 2; ind['R'] = 3; ind['Q'] = 4;
+	// hashes[hashb(Board)]++;
+	cout << minimax(Board, 0, 0, -INF, INF)[0];
+	cout << CNT << endl;
+	exit(0);
 	for(int i = 0 ; ; i++) {
 		displ(Board);
 		vector<BBT> vc = boardgen(Board, i);
 		if(i&1) {
 			cout << "Thinking...\n";
-			int mv = minimax(Board, 0, i, -1000, 1000).F;
+			int mv = minimax(Board, 0, i, -1000, 1000)[0];
 			Board = vc[mv];
 			continue;
 		}

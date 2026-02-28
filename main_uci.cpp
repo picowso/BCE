@@ -1,3 +1,4 @@
+// main_uci.cpp: UCI interface for the engine
 #pragma GCC optimize("Ofast")
 #pragma GCC optimize("unroll-loops")
 #include "header.hpp"
@@ -6,12 +7,16 @@ vector<move> EPMv;
 pos KPoses[2];
 int CNT = 0;
 int ind[255] = {};
+extern unordered_map<ull, short> hashes;
+extern ull chash;
 
 // reference: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 int main() {
 	int movn = 0;
 	BBT Board;
 	build_board(Board);
+	hashes[hashb(Board)]++;
+	chash = hashb(Board);
 	vector<string> gg = ucimovesgen(Board, 0);
 	cout << "id name BriwatsCE\n";
 	cout << "id author Anass Zakar\n";
@@ -62,6 +67,8 @@ int main() {
 				exit(0);
 			}
 
+			hashes[hashb(Board)]++;
+			cout << "OMG " << hashes[hashb(Board)] << endl;
 			movn++;
 		}
 
@@ -71,6 +78,8 @@ int main() {
 			int ind = minimax(Board, 0, movn, -INF, INF)[0];
 			cout << "bestmove " << cur[ind] << endl;
 			domove(Board, 0, act[ind]);
+			hashes[hashb(Board)]++;
+			cout << "OMG " << hashes[hashb(Board)] << endl;
 			movn++;
 		}
 	}

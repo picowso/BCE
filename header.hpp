@@ -5,11 +5,13 @@
 #include <stack>
 #include <tuple>
 #include <algorithm>
+#include <unordered_map>
 using namespace std;
 #define F first
 #define S second
 #define EMP {VIDE, 0}
 #define move pair<pair<int,int>, pair<int,int>>
+using ull = unsigned long long;
 using uchar = unsigned char;
 
 #define INF 10000000
@@ -60,3 +62,4 @@ vector<string> ucimovesgen(BBT &Board, int i);
 
 // engine
 array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta);
+ull hashb(BBT &Board);
