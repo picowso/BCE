@@ -4,7 +4,7 @@ extern vector<move> Moves;
 extern vector<move> EPMv;
 extern int CNT;
 stack<vector<fmov>> fmoves;
-const int DEPTH_LIM = 6;
+const int DEPTH_LIM = 5;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8] = 	{ 0,  0,  0,  0,  0,  0,  0,  0,
@@ -61,10 +61,19 @@ int KV[8][8] = 	{-30,-40,-40,-50,-50,-40,-40,-30,
 				 20, 20,  0,  0,  0,  0, 20, 20,
 				 20, 30, 10,  0,  0, 10, 30, 20};
 
+int EKV[8][8] = {-50,-40,-30,-20,-20,-30,-40,-50,
+				-30,-20,-10,  0,  0,-10,-20,-30,
+				-30,-10, 20, 30, 30, 20,-10,-30,
+				-30,-10, 30, 40, 40, 30,-10,-30,
+				-30,-10, 30, 40, 40, 30,-10,-30,
+				-30,-10, 20, 30, 30, 20,-10,-30,
+				-30,-30,  0,  0,  0,  0,-30,-30,
+				-50,-30,-30,-30,-30,-30,-30,-50};
+
 // TODO:
 // - involve NNs
 // - tweak it more to increase elo :pray:
-int Pvals[13] = {10, 32, 33, 50, 100, 10000, 10, 32, 33, 50, 100, 10000, 0};
+int Pvals[13] = {10, 32, 33, 50, 100, 0, 10, 32, 33, 50, 100, 0, 0};
 int evaluate(BBT CBoard) {
 	int cw = 0, cb = 0;
 	int lc[2] = {0};
@@ -85,7 +94,10 @@ int evaluate(BBT CBoard) {
 			if(tp == 2) lc[color] += BV[k][j];
 			if(tp == 3) lc[color] += RV[k][j];
 			if(tp == 4) lc[color] += QV[k][j];
-			if(tp == 5) lc[color] += KV[k][j];
+			if(tp == 5) {
+				if(min(cw, cb) > 100) lc[color] += KV[k][j];
+				else lc[color] += EKV[k][j];
+			}
 		}
 	}
 
@@ -98,13 +110,13 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	CNT++;
 	if(depth == DEPTH_LIM) {
 		// displ(CBoard);
-		return {0, -evaluate(CBoard)};
+		return {0, evaluate(CBoard) * (movn&1 ? 1 : -1)};
 	}
 
 	vector<vector<fmov>> moves = bmovesgen(CBoard, movn);
 	if(moves.empty()) {
 		// displ(CBoard);
-		if(incheck(CBoard, movn)) return {0, 100'000 * (depth&1 ? 1 : -1)}; // checkmate
+		if(incheck(CBoard, movn)) return {0, INF * (movn&1 ? 1 : -1)}; // checkmate
 		return {0, 0}; // stalemate
 	}
 
@@ -130,7 +142,7 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	int sc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 	undomove(CBoard);
 	if(depth&1) {
-		for(int i = 1 ; i < min(20, (int)moves.size()) ; i++) {
+		for(int i = 1 ; i < moves.size() ; i++) {
 			domove(CBoard, 1, moves[movo[i]], movn);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);
@@ -145,7 +157,7 @@ pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	}
 	
 	else {
-		for(int i = 1 ; i < min(20, (int)moves.size()) ; i++) {
+		for(int i = 1 ; i < moves.size() ; i++) {
 			domove(CBoard, 1, moves[movo[i]], movn);
 			int nsc = minimax(CBoard, depth+1, movn+1, alpha, beta).S;
 			undomove(CBoard);

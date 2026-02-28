@@ -13,6 +13,12 @@ int main() {
 	build_board(Board);
 	vector<string> gg = ucimovesgen(Board, 0);
 	// for(string g: gg) cout << g << endl;
+	int movn = 0;
+	cout << "id name BriwatsCE\n";
+	cout << "id author Anass Zakar\n";
+	cout << "uciok\n";
+	cout << flush;
+	// bool is_white = 0;
 	for(;;) {
 		string inp;
 		// cin >> inp;
@@ -26,7 +32,7 @@ int main() {
 			cout << "id name BriwatsCE\n";
 			cout << "id author Anass Zakar\n";
 			cout << "uciok\n";
-			cout << endl;
+			cout << flush;
 		}
 
 		else if(inp == "isready") {
@@ -37,49 +43,45 @@ int main() {
 			build_board(Board);
 		}
 
+		// bug is there is some global var that isnt cleared
 		else if(inp.substr(0, 23) == "position startpos moves") {
-			build_board(Board);
-			// cout << "bestmove b7b6" << endl;
 			string u;
-			vector<string> moves;
-			inp.push_back(' ');
-			for(int i = 23 ; i < inp.size() ; i++) {
-				if(inp[i] == ' ') {
-					if(u.size()) {
-						moves.push_back(u);
-						u = "";
-					}
-				}
-
-				if(inp[i] != ' ') u.push_back(inp[i]);
+			for(int i = inp.size()-1 ; i >= 0 ; i--) {
+				if(inp[i] == ' ') break;
+				u.push_back(inp[i]);
 			}
 
-			int movn = moves.size();
-			// if you think this is unefficient look at the rest of the code
-			for(int i = 0 ; i < moves.size() ; i++) {
-				vector<string> cur = ucimovesgen(Board, i);
-				vector<vector<fmov>> act = bmovesgen(Board, i);
-				bool fnd = 0;
-				for(int j = 0 ; j < cur.size() ; j++) {
-					if(cur[j] == moves[i]) {
-						domove(Board, 0, act[j], i);
-					}
-				}
-			}
-
-			displ(Board);
-			int ind = minimax(Board, 0, movn, -INF, INF).F;
+			reverse(u.begin(), u.end());
+			// in case its white :3
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
-			for(string u: cur) cout << u << endl;
-			cout << act.size() << " " << cur.size() << " " << ind << endl;
-			// debug
-			// cout << act.size() << " " << ind << endl;
-			cout << "bestmove " << cur[ind] << endl;
-			// domove(Board, 1, act[ind]);
+			bool fnd = 0;
+			// cout << u << endl;
+			for(int j = 0 ; j < cur.size() ; j++) {
+				// cout << cur[j] << " ";
+				if(cur[j] == u) {
+					fnd = 1;
+					domove(Board, 0, act[j], movn);
+					// displ(Board);
+				}
+			}
+
+			if(!fnd) {
+				cout << u << "ERROR :3" << endl;
+				exit(0);
+			}
+
 			// displ(Board);
-			// cout << flush;
-			// undomove(Board);
+			movn++;
+		}
+
+		else if(inp.substr(0, 2) == "go") {
+			vector<string> cur = ucimovesgen(Board, movn);
+			vector<vector<fmov>> act = bmovesgen(Board, movn);
+			int ind = minimax(Board, 0, movn, -INF, INF).F;
+			cout << "bestmove " << cur[ind] << endl;
+			domove(Board, 0, act[ind]);
+			movn++;
 		}
 	}
 }

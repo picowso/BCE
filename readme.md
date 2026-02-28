@@ -19,3 +19,11 @@ a pseudo-functional and kinda unefficient chess engine
 - [ ] Use Mailbox or 0x88 instead of current 8x8 (no bitboards!)
 
 - [ ] Use a NNUE/NN/MLP/something instead of the hand-made evaluation function, a good dataset for this might be +3000 lichess rapid games.
+
+###### small todos:
+
+- [ ] Fix pawn promotion in UCI
+
+- [X] Make it also play white in UCI
+
+- [X] Fix en passant

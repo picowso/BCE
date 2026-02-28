@@ -6,7 +6,7 @@ extern pos KPoses[2];
 bool samecolor(BBT &Board, pos x, pos y) {
     int a = Board[x.F][x.S].type;
     int b = Board[y.F][y.S].type;
-    return max(a, b) < 6 or min(a, b) > 5;
+    return(a < 6 and b < 6) or (a > 5 and b > 5);
 }
 
 bool inboard(pos x) {
@@ -33,16 +33,16 @@ void add(pos &x, pos y) {
 
 void displ(BBT Board) {
     // string tns = u8"♟♞♝♜♛♚♙♘♗♖♕♔ ";
-    string tns = "pmbrqkPMBRQK ";
+    // string tns = "pmbrqkPMBRQK ";
     // cout << "\x1B[2J\x1B[H";
-    // array<char8_t[4], 13> tns = {
-    //     u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
-    //     u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
-    // };
+    array<char8_t[4], 13> tns = {
+        u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
+        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
+    };
 
     for(int i = 0 ; i < 8 ; i++) {
-        // for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
-        for(int j = 0 ; j < 8 ; j++) cout << tns[Board[i][j].type];
+        for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
+        // for(int j = 0 ; j < 8 ; j++) cout << tns[Board[i][j].type];
         cout << endl;
     }
 }
@@ -134,7 +134,9 @@ void movegen(BBT &Board, int movn) {
                     if(good(Board, curr, kcur) and (Board[kcur.F-clr][kcur.S].type == 0 or Board[kcur.F-clr][kcur.S].type == 6)
                         and Board[kcur.F-clr][kcur.S].lstm == movn-1
                         and !samecolor(Board, curr, {kcur.F-clr, kcur.S})
-                        and curr.F == 5-color) EPMv.push_back({curr, kcur});
+                        and curr.F == 3+color) {
+                            EPMv.push_back({curr, kcur});
+                    }
                 }
             }
 
@@ -291,8 +293,8 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
     
     for(int j = 0 ; j < fMoves.size() ; j++) {
         move pl = fMoves[j];
-        int clr = 1;
-        if(!(i&1)) clr *= -1;
+        int clr = -1;
+        if(i&1) clr *= -1;
         vector<fmov> rr;
         if(j >= kj) rr.push_back({pl.S.F-clr, pl.S.S, EMP});
         rr.push_back({pl.S.F, pl.S.S, Board[pl.F.F][pl.F.S]});
@@ -300,7 +302,7 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
 
         // king in check after the move?
         domove(Board, 1, rr);
-        bool u = incheck(Board, i+1);
+        bool u = incheck(Board, i);
         undomove(Board);
         if(u) continue;
 
@@ -334,7 +336,7 @@ vector<string> ucimovesgen(BBT &Board, int i) {
     // Short castle
     movegen(Board, i+1);
     bool u = 1;
-    uchar rank = 7*(!(i&1)) + 1;
+    uchar rank = 7*(!(i&1));
     for(move k: Moves) {
         if(k.S.F == rank and 4 <= k.S.S and k.S.S <= 6) u = 0;
     }
@@ -347,14 +349,14 @@ vector<string> ucimovesgen(BBT &Board, int i) {
     w = w and max(Board[rank][4].lstm, Board[rank][7].lstm) == 0;
     if(w and u) {
         string rr = "e g ";
-        rr[1] = rank + '0';
-        rr[3] = rank + '0';
+        rr[1] = 7 - rank + '1';
+        rr[3] = 7 - rank + '1';
         res.push_back(rr);
     }
 
     // Long Castle
     u = 1;
-    rank = 7*(!(i&1)) + 1;
+    rank = 7*(!(i&1));
     for(move k: Moves) {
         if(k.S.F == rank and 2 <= k.S.S and k.S.S <= 4) u = 0;
     }
@@ -367,15 +369,15 @@ vector<string> ucimovesgen(BBT &Board, int i) {
     w = w and max(Board[rank][0].lstm, Board[rank][4].lstm) == 0;
     if(w and u) {
         string rr = "e c ";
-        rr[1] = rank + '0';
-        rr[3] = rank + '0';
+        rr[1] = 7 - rank + '1';
+        rr[3] = 7 - rank + '1';
         res.push_back(rr);
     }
     
     for(int j = 0 ; j < fMoves.size() ; j++) {
         move pl = fMoves[j];
-        int clr = 1;
-        if(!(i&1)) clr *= -1;
+        int clr = -1;
+        if(i&1) clr *= -1;
         string rr = {pl.F.S + 'a', 7 - pl.F.F + '1', pl.S.S + 'a', 7 - pl.S.F + '1'};
         // cout << pl.F.F << " " << pl.F.S << " " << pl.S.F << " " << pl.S.S << " " << rr << endl;
         vector<fmov> rw;
@@ -385,7 +387,7 @@ vector<string> ucimovesgen(BBT &Board, int i) {
 
         // king in check after the move?
         domove(Board, 1, rw);
-        bool u = incheck(Board, i+1);
+        bool u = incheck(Board, i);
         undomove(Board);
         if(u) continue;
 
@@ -430,9 +432,9 @@ void domove(BBT &Board, bool onstack, vector<fmov> &mov, int movn) {
         Piece c = get<2>(mov[i]);
         puh.push_back({a, b, Board[a][b]});
         if(c.type == 5) KPoses[0] = {a, b};
-        if(c.type == 1) KPoses[1] = {a, b};
+        if(c.type == 11) KPoses[1] = {a, b};
         Board[a][b] = c;
-        if(movn!=-1) Board[a][b].lstm = movn;
+        Board[a][b].lstm = movn;
     }
 
     if(onstack) fmoves.push(puh);
@@ -452,7 +454,7 @@ void undomove(BBT &Board) {
         short a = get<0>(puh[i]), b = get<1>(puh[i]);
         Piece c = get<2>(puh[i]);
         if(c.type == 5) KPoses[0] = {a, b};
-        if(c.type == 1) KPoses[1] = {a, b};
+        if(c.type == 11) KPoses[1] = {a, b};
         Board[a][b] = c;
     }
 }
