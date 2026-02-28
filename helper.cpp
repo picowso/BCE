@@ -307,11 +307,11 @@ vector<vector<fmov>> bmovesgen(BBT &Board, int i) {
         if(u) continue;
 
         // pawn promo
-        int q = 7*(!(i&1));
-        if(Board[pl.S.F][pl.S.S].type != VIDE and (Board[pl.S.F][pl.S.S].type == 0 or Board[pl.S.F][pl.S.S].type == 6) and pl.S.F == q) {
+        int q = 7*(i&1);
+        if((Board[pl.F.F][pl.F.S].type == 0 or Board[pl.F.F][pl.F.S].type == 6) and pl.S.F == q) {
             for(int j = 1 ; j <= 4 ; j++) {
                 Piece mh = Board[pl.S.F][pl.S.S];
-                mh.type = (Type)(j + (!(i&1))*6);
+                mh.type = (Type)(j + (i&1)*6);
                 rr.push_back({pl.S.F, pl.S.S, mh});
                 res.push_back(rr);
                 rr.pop_back();
@@ -392,9 +392,9 @@ vector<string> ucimovesgen(BBT &Board, int i) {
         if(u) continue;
 
         // pawn promo
-        int q = 7*(!(i&1));
+        int q = 7*(i&1);
         char ind[4] = {'n', 'b', 'r', 'q'};
-        if(Board[pl.S.F][pl.S.S].type != VIDE and (Board[pl.S.F][pl.S.S].type == 0 or Board[pl.S.F][pl.S.S].type == 6) and pl.S.F == q) {
+        if((Board[pl.F.F][pl.F.S].type == 0 or Board[pl.F.F][pl.F.S].type == 6) and pl.S.F == q) {
             for(int j = 0 ; j < 4 ; j++) {
                 // Piece mh = Board[pl.S.F][pl.S.S];
                 // mh.type = (Type)(j + (!(i&1))*6);

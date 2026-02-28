@@ -6,7 +6,7 @@ vector<move> EPMv;
 pos KPoses[2];
 int CNT = 0;
 int ind[255] = {};
-
+bool is_white;
 // https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 int main() {
 	BBT Board;
@@ -52,6 +52,7 @@ int main() {
 			}
 
 			reverse(u.begin(), u.end());
+			if(u=="") is_white = 1;
 			// in case its white :3
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
@@ -78,7 +79,7 @@ int main() {
 		else if(inp.substr(0, 2) == "go") {
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
-			int ind = minimax(Board, 0, movn, -INF, INF).F;
+			int ind = minimax(Board, 0, movn, -INF, INF)[0];
 			cout << "bestmove " << cur[ind] << endl;
 			domove(Board, 0, act[ind]);
 			movn++;

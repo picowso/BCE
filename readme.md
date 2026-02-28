@@ -14,16 +14,23 @@ a pseudo-functional and kinda unefficient chess engine
 
 - [X] Implement UCI and hook it up with Cute-Chess or Lichess
 
-- [ ] Make it bug-less! (play a lot against it in Cute-Chess, should be sure after playing 3 full games without illegal moves from it)
+- [X] Make it bug-less! (play a lot against it in Cute-Chess, should be sure after playing 3 full games without illegal moves from it)
 
-- [ ] Use Mailbox or 0x88 instead of current 8x8 (no bitboards!)
+- [ ] Use Mailbox or 0x88 instead of current 8x8
 
 - [ ] Use a NNUE/NN/MLP/something instead of the hand-made evaluation function, a good dataset for this might be +3000 lichess rapid games.
 
 ###### small todos:
 
-- [ ] Fix pawn promotion in UCI
+<!-- - [ ] Implement Threefold-Repetition-Draw check -->
+<!-- The reason why we dont need this is it's handeled by UCI, we can instead just find the shortest path to the best eval! -->
+
+- [X] Fix pawn promotion in UCI
 
 - [X] Make it also play white in UCI
 
 - [X] Fix en passant
+
+- [ ] Read more of this https://www.chessprogramming.org/Move_Ordering
+
+- [ ] Fix new bug (briwats always plays worst moves as white?)

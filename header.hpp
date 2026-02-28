@@ -60,4 +60,4 @@ void undomove(BBT &Board);
 vector<string> ucimovesgen(BBT &Board, int i);
 
 // engine
-pair<int, int> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta);
+array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta);
