@@ -18,6 +18,7 @@ int main() {
 	cout << "id author Anass Zakar\n";
 	cout << "uciok\n";
 	cout << flush;
+	bool uw = 0;
 	// bool is_white = 0;
 	for(;;) {
 		string inp;
@@ -45,6 +46,7 @@ int main() {
 
 		// bug is there is some global var that isnt cleared
 		else if(inp.substr(0, 23) == "position startpos moves") {
+			uw = 1;
 			string u;
 			for(int i = inp.size()-1 ; i >= 0 ; i--) {
 				if(inp[i] == ' ') break;
@@ -52,7 +54,7 @@ int main() {
 			}
 
 			reverse(u.begin(), u.end());
-			if(u=="") is_white = 1;
+			// if(u=="moves") is_white = 1;
 			// in case its white :3
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
@@ -77,6 +79,7 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
+			if(!uw) is_white = 1;
 			vector<string> cur = ucimovesgen(Board, movn);
 			vector<vector<fmov>> act = bmovesgen(Board, movn);
 			int ind = minimax(Board, 0, movn, -INF, INF)[0];
