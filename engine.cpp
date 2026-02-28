@@ -113,7 +113,7 @@ array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 
 	vector<vector<fmov>> moves = bmovesgen(CBoard, movn);
 	if(moves.empty()) {
-		if(incheck(CBoard, movn)) return {0, INF, depth}; // checkmate
+		if(incheck(CBoard, movn)) return {0, -INF, depth}; // checkmate
 		return {0, 0}; // stalemate
 	}
 
