@@ -31,6 +31,6 @@ a pseudo-functional and kinda unefficient chess engine
 
 - [X] Fix en passant
 
-- [ ] Read more of this https://www.chessprogramming.org/Move_Ordering
+- [X] Fix new bug (briwats always plays worst moves as white?)
 
-- [ ] Fix new bug (briwats always plays worst moves as white?)
+- [ ] Read more of this https://www.chessprogramming.org/Move_Ordering
