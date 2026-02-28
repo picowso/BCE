@@ -32,7 +32,6 @@ enum Type : uchar {
 
 struct Piece {
     Type type;
-    // int numm; // number of times moves
     uchar lstm = 0; // last time moved
 };
 

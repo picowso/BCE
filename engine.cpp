@@ -1,11 +1,9 @@
 #include "header.hpp"
-// extern BBT Board;
 extern vector<move> Moves;
 extern vector<move> EPMv;
 extern int CNT;
-// extern bool is_white;
 stack<vector<fmov>> fmoves;
-const int DEPTH_LIM = 5;
+const int DEPTH_LIM = 4;
 
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8] = 	{ 0,  0,  0,  0,  0,  0,  0,  0,
@@ -105,40 +103,30 @@ int evaluate(BBT CBoard) {
 	return 100*(cw - cb) + lc[0] - lc[1];
 }
 
-// minimax!!
-// alpha beta!!
+// minimax!! alpha beta!!
 array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta) {
 	CNT++;
-	// int u = -1;
-	// if(is_white) u *= -1;
 	bool is_white = (movn-depth)&1;
 	if(depth == DEPTH_LIM) {
-		// displ(CBoard);
 		return {0, evaluate(CBoard)};
 	}
 
 	vector<vector<fmov>> moves = bmovesgen(CBoard, movn);
 	if(moves.empty()) {
-		// displ(CBoard);
 		if(incheck(CBoard, movn)) return {0, INF, depth}; // checkmate
 		return {0, 0}; // stalemate
 	}
 
 	// move ordering
 	vector<int> movo(moves.size());
-	// luck(moves.size());
-	for(int i = 0 ; i < moves.size() ; i++) {
-		movo[i] = i;
-		// luck[i] = rand()&3;
-	}
-
+	for(int i = 0 ; i < moves.size() ; i++) movo[i] = i;
 	sort(movo.begin(), movo.end(), [&](int i, int j) {
 		int ai = get<0>(moves[i][0]), aj = get<1>(moves[i][0]);
 		int bi = get<0>(moves[j][0]), bj = get<1>(moves[j][0]);
 		uchar a = CBoard[ai][aj].type, b = CBoard[bi][bj].type;
 		if(a==12)a=0;
 		if(b==12)b=0;
-		return a > b; // heuristics!
+		return a > b;
 	});
 
 	int nxtmv = movo[0];

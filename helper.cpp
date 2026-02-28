@@ -42,7 +42,6 @@ void displ(BBT Board) {
 
     for(int i = 0 ; i < 8 ; i++) {
         for(int j = 0 ; j < 8 ; j++) cout << reinterpret_cast<const char*>(tns[Board[i][j].type]);
-        // for(int j = 0 ; j < 8 ; j++) cout << tns[Board[i][j].type];
         cout << endl;
     }
 }
@@ -74,14 +73,6 @@ void build_board(BBT &Board) {
 bool incheck(BBT &Board, int mvnm) {
     movegen(Board, mvnm+1);
     pos kg = KPoses[mvnm&1];
-    // for(int j = 0 ; j < 8 ; j++) {
-    //     for(int k = 0 ; k < 8 ; k++) {
-    //         if(Board[j][k].type%6 == 5 and (Board[j][k].type < 6) == (mvnm&1)) {
-    //             kg = {j, k};
-    //         }
-    //     }
-    // }
-
     bool pos = 0;
     for(move pl: Moves) {
         if(pl.S == kg) {
@@ -379,7 +370,6 @@ vector<string> ucimovesgen(BBT &Board, int i) {
         int clr = -1;
         if(i&1) clr *= -1;
         string rr = {pl.F.S + 'a', 7 - pl.F.F + '1', pl.S.S + 'a', 7 - pl.S.F + '1'};
-        // cout << pl.F.F << " " << pl.F.S << " " << pl.S.F << " " << pl.S.S << " " << rr << endl;
         vector<fmov> rw;
         if(j >= kj) rw.push_back({pl.S.F-clr, pl.S.S, EMP});
         rw.push_back({pl.S.F, pl.S.S, Board[pl.F.F][pl.F.S]});
@@ -396,8 +386,6 @@ vector<string> ucimovesgen(BBT &Board, int i) {
         char ind[4] = {'n', 'b', 'r', 'q'};
         if((Board[pl.F.F][pl.F.S].type == 0 or Board[pl.F.F][pl.F.S].type == 6) and pl.S.F == q) {
             for(int j = 0 ; j < 4 ; j++) {
-                // Piece mh = Board[pl.S.F][pl.S.S];
-                // mh.type = (Type)(j + (!(i&1))*6);
                 rr.push_back(ind[j]);
                 res.push_back(rr);
                 rr.pop_back();
@@ -449,7 +437,6 @@ void undomove(BBT &Board) {
 
     vector<fmov> puh = fmoves.top();
     fmoves.pop();
-    // domove(Board, 0, puh); false we need reverse order
     for(int i = puh.size() - 1 ; i >= 0 ; i--) {
         short a = get<0>(puh[i]), b = get<1>(puh[i]);
         Piece c = get<2>(puh[i]);
