@@ -16,9 +16,7 @@ a pseudo-functional and kinda unefficient chess engine
 
 - [X] Make it bug-less! (play a lot against it in Cute-Chess, should be sure after playing 3 full games without illegal moves from it)
 
-- [ ] Implement Zobrist Hashing
-
-- [ ] Use Mailbox or 0x88 instead of current 8x8
+- [ ] REWRITE EVERYTHING! (write in a file how it should work)
 
 - [ ] Use a NNUE/NN/MLP/something instead of the hand-made evaluation function, a good dataset for this might be +3000 lichess rapid games.
 
@@ -37,6 +35,4 @@ a pseudo-functional and kinda unefficient chess engine
 
 - [ ] Read more of this https://www.chessprogramming.org/Move_Ordering
 
-###### even smaller:
-
-- [ ] reduce 1.5s in depth 5 to ~0.5s by optimizing movegen() choices
+- [ ] I should've read this before lol https://www.chessprogramming.org/Encoding_Moves

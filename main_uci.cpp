@@ -1,27 +1,28 @@
 // main_uci.cpp: UCI interface for the engine
-#pragma GCC optimize("Ofast")
-#pragma GCC optimize("unroll-loops")
 #include "header.hpp"
-vector<move> Moves;
-vector<move> EPMv;
-pos KPoses[2];
-int CNT = 0;
-int ind[255] = {};
-extern unordered_map<ull, short> hashes;
-extern ull chash;
+extern BBT Board;
+extern CMove Moves[218];
+extern int mvs;
 
 // reference: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
+bool mv = 1;
+string conv(CMove cmove) {
+	return {'a' + (cmove.from & 7),
+			'1' + (7 - (cmove.from >> 4)),
+			'a' + (cmove.to & 7),
+			'1' + (7 - (cmove.to >> 4))
+	};
+}
+
 int main() {
-	int movn = 0;
-	BBT Board;
-	build_board(Board);
-	hashes[hashb(Board)]++;
-	chash = hashb(Board);
-	vector<string> gg = ucimovesgen(Board, 0);
-	cout << "id name BriwatsCE\n";
-	cout << "id author Anass Zakar\n";
-	cout << "uciok\n";
-	cout << flush;
+	build_board();
+	cout << mvs << endl;
+	movegen();
+	cout << mvs << endl;
+	for(int i = 0 ; i < mvs ; i++) {
+		cout << conv(Moves[i]) << endl;
+	}
+
 	for(;;) {
 		string inp;
 		getline(cin, inp);
@@ -41,10 +42,11 @@ int main() {
 		}
 
 		else if(inp == "ucinewgame") {
-			build_board(Board);
+			build_board();
 		}
 
 		else if(inp.substr(0, 23) == "position startpos moves") {
+			mv ^= 1;
 			string u;
 			for(int i = inp.size()-1 ; i >= 0 ; i--) {
 				if(inp[i] == ' ') break;
@@ -52,35 +54,23 @@ int main() {
 			}
 
 			reverse(u.begin(), u.end());
-			vector<string> cur = ucimovesgen(Board, movn);
-			vector<vector<fmov>> act = bmovesgen(Board, movn);
-			bool fnd = 0;
-			for(int j = 0 ; j < cur.size() ; j++) {
-				if(cur[j] == u) {
-					fnd = 1;
-					domove(Board, 0, act[j], movn);
+			movegen();
+			for(int i = 0 ; i < mvs ; i++) {
+				string c = conv(Moves[i]);
+				if(c == u) {
+					domove(Moves[i], 0);
+					break;
 				}
 			}
-
-			if(!fnd) {
-				cout << u << "ERROR :3" << endl;
-				exit(0);
-			}
-
-			hashes[hashb(Board)]++;
-			cout << "OMG " << hashes[hashb(Board)] << endl;
-			movn++;
 		}
 
 		else if(inp.substr(0, 2) == "go") {
-			vector<string> cur = ucimovesgen(Board, movn);
-			vector<vector<fmov>> act = bmovesgen(Board, movn);
-			int ind = minimax(Board, 0, movn, -INF, INF)[0];
-			cout << "bestmove " << cur[ind] << endl;
-			domove(Board, 0, act[ind]);
-			hashes[hashb(Board)]++;
-			cout << "OMG " << hashes[hashb(Board)] << endl;
-			movn++;
+			mv ^= 1;
+			int ind = minimax(0, mv)[0];
+			movegen();
+			cout << conv(Moves[ind]) << endl;
+			domove(Moves[ind], 0);
+			cout << "YAY" << endl;
 		}
 	}
 }

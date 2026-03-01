@@ -7,59 +7,30 @@
 #include <algorithm>
 #include <unordered_map>
 using namespace std;
-#define F first
-#define S second
-#define EMP {VIDE, 0}
-#define move pair<pair<int,int>, pair<int,int>>
-using ull = unsigned long long;
-using uchar = unsigned char;
-
-#define INF 10000000
-using pos = pair<int, int>;
-enum Type : uchar {
-    WPawn = 0,
-    WKnight = 1,
-    WBishop = 2,
-    WRook = 3,
-    WQueen = 4,
-    WKing = 5,
-    BPawn = 6,
-    BKnight = 7,
-    BBishop = 8,
-    BRook = 9,
-    BQueen = 10,
-    BKing = 11,
-    VIDE = 12
+const int DEPTH_LIMIT = 1;
+const int INF = 1000000;
+using u8 = int; // BYTE
+enum Piece : u8 {
+    P = 0,
+    N = 1,
+    B = 2,
+    R = 3,
+    Q = 4,
+    K = 5,
+    EMP = 6
 };
 
-struct Piece {
-    Type type;
-    uchar lstm = 0; // last time moved
+using BBT = Piece[128];
+struct CMove {
+    u8 from; // from
+    u8 to; // to
+    Piece capture; // the piece captured
+    Piece promo; // piece we're promoting to (EMP else pawn promotion)
+    u8 flag; // 1 = en passant, 2 = long castle, 3 = short castle
 };
 
-using fmov = tuple<uchar, uchar, Piece>;
-
-using BBT = array<array<Piece, 8>, 8>;
-
-// helper
-bool samecolor(BBT &CBoard, pos x, pos y);
-bool inboard(pos x);
-bool good(BBT &CBoard,pos x, pos y);
-bool take(BBT &CBoard,pos x, pos y);
-bool tng(BBT &CBoard,pos x, pos y);
-void add(pos &x, pos y);
-void displ(BBT CBoard);
-bool incheck(BBT &CBoard, int mvnm);
-
-// move generation
-void movegen(BBT &CBoard, int movn);
-void build_board(BBT &CBoard);
-vector<vector<fmov>> bmovesgen(BBT &Board, int i);
-vector<BBT> boardgen(BBT &Board, int i);
-void domove(BBT &Board, bool onstack, vector<fmov> &mov, int movn = -1);
-void undomove(BBT &Board);
-vector<string> ucimovesgen(BBT &Board, int i);
-
-// engine
-array<int, 3> minimax(BBT &CBoard, int depth, int movn, int alpha, int beta);
-ull hashb(BBT &Board);
+array<int, 2> minimax(int depth, bool turn);
+void movegen();
+void domove(CMove Move, bool roll);
+void build_board();
+void undomove();
