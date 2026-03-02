@@ -62,13 +62,22 @@ int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-50,-30,-30,-30,-30,-30,-30,-50};
 
 int evaluate() {
-    const int Pvals[13] = {0, 10, 32, 33, 50, 6000};
+    const int Pvals[13] = {0, 100, 320, 330, 500, 6000};
     int score_w = 0, score_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
+		int r = i >> 4;
+        int f = i & 7;
         if(i&0x88) continue;
         if(Board[i] == EMP) continue;
-        if(color[i]) score_w += Pvals[Board[i]];
-        else score_b += Pvals[Board[i]];
+        if(color[i]) {
+        	score_w += Pvals[Board[i]];
+        	score_w += PV[Board[i]][r][f];
+        }
+
+        else {
+        	score_b += Pvals[Board[i]];
+        	score_b += PV[Board[i]][7-r][f];
+        }
     }
 
     return score_w - score_b;

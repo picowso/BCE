@@ -16,8 +16,8 @@ void build_board() {
     Board[0] = R;
     Board[1] = N;
     Board[2] = B;
-    Board[3] = K;
-    Board[4] = Q;
+    Board[3] = Q;
+    Board[4] = K;
     Board[5] = B;
     Board[6] = N;
     Board[7] = R;
@@ -118,15 +118,16 @@ void movegen(bool mv) {
             int t = pdir[color[i]];
             int p1 = i + t + 1;
             int p2 = i + t - 1;
+            int r = i >> 4;
             if(Board[p1] != EMP and color[p1] != color[i]) AddMove(i, p1);
             if(Board[p2] != EMP and color[p2] != color[i]) AddMove(i, p2);
 
             // moves
-            if(!((i+t) & 0x88) and Board[i + t] != EMP) continue;
+            if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
             AddMove(i, i + t);
 
-            if(!((i+2*t) & 0x88) and Board[i + 2*t] != EMP) continue;
-            AddMove(i, i + 2*t);
+            if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;
+            if((color[i] and r == 6) or (color[i] and r == 1)) AddMove(i, i + 2*t);
             
             // en passant
             continue;
