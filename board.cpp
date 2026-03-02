@@ -2,6 +2,11 @@
 #include "header.hpp"
 BBT Board; // Global board
 u8 color[128]; // 0: black, 1: white, 2: nothing
+
+// zobrist
+u64 zobrist[128][7][3];
+u64 zob_c = 0;
+gp_hash_table<u64, u64> ztable;
 void build_board() {
     for(int i = 0 ; i < 128 ; i++) {
         Board[i] = EMP;
@@ -22,6 +27,24 @@ void build_board() {
     Board[6] = N;
     Board[7] = R;
     for(int i = 0 ; i < 8 ; i++) Board[i+112] = Board[i];
+
+    // zobrist
+    zob_c = 0;
+    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    for(int i = 0 ; i < 128 ; i++) {
+        for(int j = 0 ; j < 7 ; j++) {
+            for(int k = 0 ; k < 3 ; k++) {
+                zobrist[i][j][k] = rng();
+            }
+        }
+    }
+
+    for(int i = 0 ; i < 128 ; i++) {
+        if(i&0x88) continue;
+        zob_c ^= zobrist[i][Board[i]][color[i]];
+    }
+
+    ztable[zob_c]++;
 }
 
 void printb() {
@@ -54,10 +77,15 @@ void domove(CMove Move, bool roll) {
         rb_p++;
     }
 
+    zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
+    zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
     Board[Move.to] = Board[Move.from];
     Board[Move.from] = EMP;
     color[Move.to] = color[Move.from];
     color[Move.from] = 2;
+    zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
+    zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
+    ztable[zob_c]++;
 }
 
 // the source of my misery:
@@ -75,10 +103,15 @@ void undomove() {
     // else color[rollback[rb_p].to] = 2;
     // Board[rollback[rb_p].from] = Board[rollback[rb_p].to];
     // Board[rollback[rb_p].to] = rollback[rb_p].capture;
+    ztable[zob_c]--;
+    zob_c ^= zobrist[rb.from][Board[rb.from]][color[rb.from]];
+    zob_c ^= zobrist[rb.to][Board[rb.to]][color[rb.to]];
     Board[rb.from] = Board[rb.to];
     Board[rb.to] = rb.capture;
     color[rb.from] = color[rb.to];
     color[rb.to] = rb_c[rb_p];
+    zob_c ^= zobrist[rb.to][Board[rb.to]][color[rb.to]];
+    zob_c ^= zobrist[rb.from][Board[rb.from]][color[rb.from]];
 }
 
 int dirs[8] = {1, -1, 16, -16, 17, 15, -15, -17};
@@ -127,7 +160,7 @@ void movegen(bool mv) {
             AddMove(i, i + t);
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;
-            if((color[i] and r == 6) or (color[i] and r == 1)) AddMove(i, i + 2*t);
+            if((!color[i] and r == 1) or (color[i] and r == 6)) AddMove(i, i + 2*t);
             
             // en passant
             continue;

@@ -6,10 +6,16 @@
 #include <tuple>
 #include <algorithm>
 #include <unordered_map>
+#include<ext/pb_ds/assoc_container.hpp>
+#include<ext/pb_ds/tree_policy.hpp>
+#include <random>
+#include <chrono>
+using namespace __gnu_pbds;
 using namespace std;
 const int DEPTH_LIMIT = 4;
 const int INF = 1000000;
 using u8 = unsigned char; // BYTE
+using u64 = unsigned long long;
 enum Piece : u8 {
     P = 0,
     N = 1,
@@ -29,7 +35,7 @@ struct CMove {
     u8 flag; // 1 = en passant, 2 = long castle, 3 = short castle
 };
 
-array<int, 2> minimax(int depth, bool turn);
+array<int, 2> minimax(int depth, bool turn, int a = -INF, int b = INF);
 void movegen(bool turn);
 void domove(CMove Move, bool roll);
 void build_board();

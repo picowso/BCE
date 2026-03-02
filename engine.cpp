@@ -2,7 +2,9 @@
 extern BBT Board;
 extern CMove Moves[218];
 extern int mvs;
-extern u8 color[128]; 
+extern u8 color[128];
+extern gp_hash_table<u64, u64> ztable;
+extern u64 zob_c;
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				50, 50, 50, 50, 50, 50, 50, 50,
@@ -84,11 +86,15 @@ int evaluate() {
 }
 
 int perft = 0;
-array<int, 2> minimax(int depth, bool turn) {
+array<int, 2> minimax(int depth, bool turn, int alpha, int beta) {
 	perft++;
 	// printb();
 	if(depth == DEPTH_LIMIT) {
-		return {0, evaluate()};
+		return {-1, evaluate()};
+	}
+
+	if(ztable[zob_c] >= 3) {
+		return {-1, 0};
 	}
 
 	movegen(turn);
@@ -100,7 +106,7 @@ array<int, 2> minimax(int depth, bool turn) {
 	for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
 	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i], 1);
-		array<int, 2> cscore = minimax(depth + 1, turn ^ 1);
+		array<int, 2> cscore = minimax(depth + 1, turn ^ 1, alpha, beta);
 		undomove();
 
 		if(turn) {
@@ -108,6 +114,9 @@ array<int, 2> minimax(int depth, bool turn) {
 				bscore = cscore[1];
 				ind = i;
 			}
+
+			alpha = max(alpha, cscore[1]);
+			// if(beta <= alpha) break;
 		}
 
 		else {
@@ -115,6 +124,9 @@ array<int, 2> minimax(int depth, bool turn) {
 				bscore = cscore[1];
 				ind = i;
 			}
+
+			beta = min(beta, cscore[1]);
+			// if(beta <= alpha) break;
 		}
 	}
 

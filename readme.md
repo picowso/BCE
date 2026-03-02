@@ -1,38 +1,9 @@
 # Briwats Chess Engine
 
-a pseudo-functional and kinda unefficient chess engine
+a pseudo-functional and kinda efficient chess engine
 
 ---
 
 ### what should be done:
 
-- [X] Remove Board from being global and pass by reference instead
-
-- [X] Optimize MG (move/unmove instead of storing boards!)
-
-- [X] Implement UCI move notation
-
-- [X] Implement UCI and hook it up with Cute-Chess or Lichess
-
-- [X] Make it bug-less! (play a lot against it in Cute-Chess, should be sure after playing 3 full games without illegal moves from it)
-
-- [ ] REWRITE EVERYTHING! (write in a file how it should work)
-
-- [ ] Use a NNUE/NN/MLP/something instead of the hand-made evaluation function, a good dataset for this might be +3000 lichess rapid games.
-
-##### small todos:
-
-<!-- - [ ] Implement Threefold-Repetition-Draw check -->
-<!-- The reason why we dont need this is it's handeled by UCI, we can instead just find the shortest path to the best eval! -->
-
-- [X] Fix pawn promotion in UCI
-
-- [X] Make it also play white in UCI
-
-- [X] Fix en passant
-
-- [X] Fix new bug (briwats always plays worst moves as white?)
-
-- [ ] Read more of this https://www.chessprogramming.org/Move_Ordering
-
-- [ ] I should've read this before lol https://www.chessprogramming.org/Encoding_Moves
+- [ ] Implement Zobrist Hashing

@@ -3,7 +3,8 @@
 extern BBT Board;
 extern CMove Moves[218];
 extern int mvs;
-
+extern gp_hash_table<u64, u64> ztable;
+extern u64 zob_c;
 // reference: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 bool mv = 0;
 string conv(CMove cmove) {
@@ -60,6 +61,8 @@ int main() {
 					break;
 				}
 			}
+
+			cout << "OMG " << ztable[zob_c] << endl;
 		}
 
 		else if(inp.substr(0, 2) == "go") {
@@ -74,6 +77,7 @@ int main() {
 
 			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
+			cout << "OMG " << ztable[zob_c] << endl;
 		}
 	}
 }
