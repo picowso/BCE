@@ -5,7 +5,7 @@ extern CMove Moves[218];
 extern int mvs;
 
 // reference: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
-bool mv = 1;
+bool mv = 0;
 string conv(CMove cmove) {
 	return {'a' + (cmove.from & 7),
 			'1' + (7 - (cmove.from >> 4)),
@@ -14,15 +14,12 @@ string conv(CMove cmove) {
 	};
 }
 
+extern int perft;
 int main() {
 	build_board();
-	cout << mvs << endl;
-	movegen();
-	cout << mvs << endl;
-	for(int i = 0 ; i < mvs ; i++) {
-		cout << conv(Moves[i]) << endl;
-	}
-
+	// cout << minimax(0, 1)[0] << endl;
+	// cout << perft << endl;
+	// exit(0);
 	for(;;) {
 		string inp;
 		getline(cin, inp);
@@ -46,6 +43,7 @@ int main() {
 		}
 
 		else if(inp.substr(0, 23) == "position startpos moves") {
+			printb();
 			mv ^= 1;
 			string u;
 			for(int i = inp.size()-1 ; i >= 0 ; i--) {
@@ -54,7 +52,7 @@ int main() {
 			}
 
 			reverse(u.begin(), u.end());
-			movegen();
+			movegen(mv);
 			for(int i = 0 ; i < mvs ; i++) {
 				string c = conv(Moves[i]);
 				if(c == u) {
@@ -65,12 +63,17 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
+			printb();
 			mv ^= 1;
 			int ind = minimax(0, mv)[0];
-			movegen();
-			cout << conv(Moves[ind]) << endl;
+			// cout << perft << endl;
+			movegen(mv);
+			for(int i = 0 ; i < mvs ; i++) {
+				// cout << i <<" " <<conv(Moves[i]) << endl;
+			}
+
+			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
-			cout << "YAY" << endl;
 		}
 	}
 }

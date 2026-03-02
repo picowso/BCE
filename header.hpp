@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <unordered_map>
 using namespace std;
-const int DEPTH_LIMIT = 1;
+const int DEPTH_LIMIT = 4;
 const int INF = 1000000;
-using u8 = int; // BYTE
+using u8 = unsigned char; // BYTE
 enum Piece : u8 {
     P = 0,
     N = 1,
@@ -30,7 +30,8 @@ struct CMove {
 };
 
 array<int, 2> minimax(int depth, bool turn);
-void movegen();
+void movegen(bool turn);
 void domove(CMove Move, bool roll);
 void build_board();
 void undomove();
+void printb();

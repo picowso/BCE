@@ -65,7 +65,7 @@ int evaluate() {
     const int Pvals[13] = {0, 10, 32, 33, 50, 6000};
     int score_w = 0, score_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
-        if(i&8) continue;
+        if(i&0x88) continue;
         if(Board[i] == EMP) continue;
         if(color[i]) score_w += Pvals[Board[i]];
         else score_b += Pvals[Board[i]];
@@ -74,16 +74,22 @@ int evaluate() {
     return score_w - score_b;
 }
 
+int perft = 0;
 array<int, 2> minimax(int depth, bool turn) {
-	if(depth == DEPTH_LIMIT) return {0, evaluate()};
-	movegen();
+	perft++;
+	// printb();
+	if(depth == DEPTH_LIMIT) {
+		return {0, evaluate()};
+	}
+
+	movegen(turn);
 	if(mvs == 0) return {0, evaluate()};
-	int bscore = INF * (turn ? 1 : -1 );
+	int bscore = INF * (turn ? -1 : 1 );
 	int ind = -1;
-	cout << depth << " " << turn << endl;
-	CMove local[mvs];
-	copy(Moves, Moves + mvs, local);
-	for(int i = 0 ; i < mvs ; i++) {
+	// cout << depth << " " << turn << endl;
+	vector<CMove> local(mvs);
+	for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
+	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i], 1);
 		array<int, 2> cscore = minimax(depth + 1, turn ^ 1);
 		undomove();
