@@ -15,12 +15,20 @@ string conv(CMove cmove) {
 	};
 }
 
+extern u8 color[128]; // 0: black, 1: white, 2: nothing
+extern u64 zobrist[128][7][3];
+extern u64 zob_c;
+extern gp_hash_table<u64, u64> ztable;
+extern int wkpos, bkpos;
 extern int perft;
 int main() {
 	build_board();
-	// cout << minimax(0, 1)[0] << endl;
-	// cout << perft << endl;
-	// exit(0);
+	auto t0 = chrono::high_resolution_clock::now();
+	cout << minimax(0, 1)[0] << endl;
+	auto t1 = chrono::high_resolution_clock::now();
+	cout << chrono::duration<double>(t1 - t0).count() << endl;
+	cout << perft << endl;
+	exit(0);
 	for(;;) {
 		string inp;
 		getline(cin, inp);
@@ -71,13 +79,48 @@ int main() {
 			int ind = minimax(0, mv)[0];
 			// cout << perft << endl;
 			movegen(mv);
+			cout << mvs << endl;
 			for(int i = 0 ; i < mvs ; i++) {
-				// cout << i <<" " <<conv(Moves[i]) << endl;
+				CMove Move = Moves[i];
+				cout << conv(Move) << endl;
+			// 	if(Move.from&0x88 or Move.to&0x88) {
+			//         cout << Move.from << " " << Move.to << endl;
+			//         cout << "BRO" << endl;
+			//         exit(0);
+			//     }
+
+			//     if(Board[Move.from] == K) {
+			//         if(color[Move.from]) wkpos = Move.to;
+			//         else bkpos = Move.to;
+			//     }
+
+			//     Piece cap = Board[Move.to];
+			//     u8 clr = color[Move.to];
+			//     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
+			//     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
+			//     Board[Move.to] = Board[Move.from];
+			//     Board[Move.from] = EMP;
+			//     color[Move.to] = color[Move.from];
+			//     color[Move.from] = 2;
+			//     if(incheck(color[Move.to], 1)) {
+			//     	cout << conv(Move) << endl;
+			// 	}
+
+		    //     Board[Move.from] = Board[Move.to];
+		    //     Board[Move.to] = cap;
+		    //     color[Move.from] = color[Move.to];
+		    //     color[Move.to] = clr;
+		    //     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
+		    //     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
+		    //     if(Board[Move.from] == K) {
+		    //         if(color[Move.from]) wkpos = Move.from;
+		    //         else bkpos = Move.from;
+		    //     }
 			}
 
 			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
-			cout << "OMG " << ztable[zob_c] << endl;
+			cout << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
 		}
 	}
 }

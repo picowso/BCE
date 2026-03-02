@@ -1,3 +1,4 @@
+// engine.cpp: where the engine lives
 #include "header.hpp"
 extern BBT Board;
 extern CMove Moves[218];
@@ -64,7 +65,7 @@ int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-50,-30,-30,-30,-30,-30,-30,-50};
 
 int evaluate() {
-    const int Pvals[13] = {0, 100, 320, 330, 500, 6000};
+    const int Pvals[6] = {100, 200, 450, 500, 1000, 0};
     int score_w = 0, score_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
 		int r = i >> 4;
@@ -86,27 +87,27 @@ int evaluate() {
 }
 
 int perft = 0;
-array<int, 2> minimax(int depth, bool turn, int alpha, int beta) {
-	perft++;
+array<short, 2> minimax(int depth, bool turn, int alpha, int beta) {
 	// printb();
 	if(depth == DEPTH_LIMIT) {
 		return {-1, evaluate()};
 	}
-
+	
+	perft++;
 	if(ztable[zob_c] >= 3) {
 		return {-1, 0};
 	}
 
 	movegen(turn);
-	if(mvs == 0) return {0, evaluate()};
 	int bscore = INF * (turn ? -1 : 1 );
-	int ind = -1;
+	u8 ind = 255;
 	// cout << depth << " " << turn << endl;
-	vector<CMove> local(mvs);
-	for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
-	for(int i = 0 ; i < local.size() ; i++) {
+	int sz = mvs;
+	CMove local[sz];
+	memcpy(local, Moves, mvs * sizeof(CMove));
+	for(int i = 0 ; i < sz ; i++) {
 		domove(local[i], 1);
-		array<int, 2> cscore = minimax(depth + 1, turn ^ 1, alpha, beta);
+		array<short, 2> cscore = minimax(depth + 1, turn ^ 1, alpha, beta);
 		undomove();
 
 		if(turn) {
@@ -115,7 +116,7 @@ array<int, 2> minimax(int depth, bool turn, int alpha, int beta) {
 				ind = i;
 			}
 
-			alpha = max(alpha, cscore[1]);
+			if(cscore[1] >alpha) alpha = cscore[1];
 			// if(beta <= alpha) break;
 		}
 
@@ -125,9 +126,14 @@ array<int, 2> minimax(int depth, bool turn, int alpha, int beta) {
 				ind = i;
 			}
 
-			beta = min(beta, cscore[1]);
+			if(beta > cscore[1]) beta = cscore[1];
 			// if(beta <= alpha) break;
 		}
+	}
+
+	if(ind == 255) {
+		if(incheck(turn)) return {0, (turn ? -INF : INF)};
+		return {0, 0};
 	}
 
 	return {ind, bscore};
