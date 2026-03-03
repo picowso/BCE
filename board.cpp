@@ -94,7 +94,6 @@ bool incheck(bool kc, bool u) {
     for(int p = 1 ; p < 6 ; p++) {
         for(int j = 0 ; j < rays_s[p] ; j++) {
             int cur = i;
-            // cout << "k" << p << " " << cur << " " << j << " " << rays_s[p] << endl;
             for(;;) {
                 cur += ray[p][j];
                 if(cur & 0x88) break; // outside the board
@@ -134,7 +133,7 @@ bool incheck(bool kc, bool u) {
 void domove(CMove Move, bool roll) {
     if(Move.from&0x88 or Move.to&0x88) {
         cout << Move.from << " " << Move.to << endl;
-        cout << "BRO" << endl;
+        cout << "BRO CMON" << endl;
         exit(0);
     }
 
@@ -152,6 +151,8 @@ void domove(CMove Move, bool roll) {
     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
     Board[Move.to] = Board[Move.from];
+    if(Move.promo != EMP) Board[Move.to] = Move.promo;
+
     Board[Move.from] = EMP;
     color[Move.to] = color[Move.from];
     color[Move.from] = 2;
@@ -160,7 +161,6 @@ void domove(CMove Move, bool roll) {
     ztable[zob_c]++;
 }
 
-// the source of my misery:
 void undomove() {
     // shouldn't happen
     if(!rb_p) {
@@ -179,6 +179,7 @@ void undomove() {
     zob_c ^= zobrist[rb.from][Board[rb.from]][color[rb.from]];
     zob_c ^= zobrist[rb.to][Board[rb.to]][color[rb.to]];
     Board[rb.from] = Board[rb.to];
+    if(rb.promo != EMP) Board[rb.from] = P;
     Board[rb.to] = rb.capture;
     color[rb.from] = color[rb.to];
     color[rb.to] = rb_c[rb_p];
@@ -186,14 +187,19 @@ void undomove() {
     zob_c ^= zobrist[rb.from][Board[rb.from]][color[rb.from]];
 }
 
-void AddMove(int from, int to) {
+void AddMove(int from, int to, int flag, Piece promo) {
     // cout << from << " " << to << endl;
     if(from&0x88 or to&0x88) return;
-    Moves[mvs] = {from, to, Board[to], EMP, 0};
-    domove(Moves[mvs], 1);
-    if(incheck(color[to])) mvs--;
+    // Moves[mvs] = {from, to, Board[to], promo, 0};
+    CMove m = {from, to, Board[to], promo, 0};
+
+    domove(m, 1);
+
+    if(!incheck(color[to])) {
+        Moves[mvs++] = m;   // only store if legal
+    }
+
     undomove();
-    mvs++;
 }
 
 // TODO: en passant, castling
@@ -211,15 +217,19 @@ void movegen(bool mv) {
             int p1 = i + t + 1;
             int p2 = i + t - 1;
             int r = i >> 4;
-            if(Board[p1] != EMP and color[p1] != color[i]) AddMove(i, p1);
-            if(Board[p2] != EMP and color[p2] != color[i]) AddMove(i, p2);
+            if(Board[p1] != EMP and color[p1] != color[i]) AddMove(i, p1, 0, EMP);
+            if(Board[p2] != EMP and color[p2] != color[i]) AddMove(i, p2, 0, EMP);
 
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
-            AddMove(i, i + t);
+            AddMove(i, i + t, 0, EMP);
+
+            if((color[i] and r == 1) or (!color[i] and r == 6)) {
+                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)j);
+            }
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;
-            if((!color[i] and r == 1) or (color[i] and r == 6)) AddMove(i, i + 2*t);
+            if((!color[i] and r == 1) or (color[i] and r == 6)) AddMove(i, i + 2*t, 0, EMP);
             
             // en passant
             continue;
@@ -233,11 +243,11 @@ void movegen(bool mv) {
                 if(cur & 0x88) break; // outside the board
                 // cout << cur << endl;
                 if(Board[cur] != EMP) {
-                    if(color[i] != color[cur]) AddMove(i, cur); // capture
+                    if(color[i] != color[cur]) AddMove(i, cur, 0, EMP); // capture
                     break;
                 }
             
-                AddMove(i, cur); // quiet move
+                AddMove(i, cur, 0, EMP); // quiet move
                 if(!slide[p]) break; // not slidable
             }
         }

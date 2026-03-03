@@ -92,8 +92,8 @@ array<short, 2> minimax(int depth, bool turn, int alpha, int beta) {
 	if(depth == DEPTH_LIMIT) {
 		return {-1, evaluate()};
 	}
-	
 	perft++;
+
 	if(ztable[zob_c] >= 3) {
 		return {-1, 0};
 	}

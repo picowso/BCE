@@ -13,7 +13,7 @@
 #include <cstring>
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 5;
+const int DEPTH_LIMIT = 3;
 const short INF = 30'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;
@@ -43,3 +43,4 @@ void build_board();
 void undomove();
 void printb();
 bool incheck(bool kc, bool u = 0);
+// int perft(int i, int n, bool turn);

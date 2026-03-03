@@ -7,12 +7,16 @@ extern gp_hash_table<u64, u64> ztable;
 extern u64 zob_c;
 // reference: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 bool mv = 0;
+char str2[6] = {'p', 'n', 'b', 'r', 'q', 'k'};
 string conv(CMove cmove) {
-	return {'a' + (cmove.from & 7),
+	string r = {'a' + (cmove.from & 7),
 			'1' + (7 - (cmove.from >> 4)),
 			'a' + (cmove.to & 7),
 			'1' + (7 - (cmove.to >> 4))
 	};
+
+	if(cmove.promo != EMP) r.push_back(str2[cmove.promo]);
+	return r;
 }
 
 extern u8 color[128]; // 0: black, 1: white, 2: nothing
@@ -24,11 +28,21 @@ extern int perft;
 int main() {
 	build_board();
 	auto t0 = chrono::high_resolution_clock::now();
-	cout << minimax(0, 1)[0] << endl;
+	movegen(0);
+	int u = mvs;
+	vector<CMove> q(u);
+	for(int i = 0 ; i < u ; i++) q[i] = Moves[i];
+	for(int i = 0 ; i < u ; i++) {
+		domove(q[i], 1);
+		// cout << conv(q[i]) << " " << perft(0, 2, 1) << endl;
+		undomove();
+	}
+
+	// cout << perft(0, 3, 0) << endl;
+	// for(int i = 1 ; i < 5 ; i++) cout << perft(0, i, 1) << endl;
 	auto t1 = chrono::high_resolution_clock::now();
 	cout << chrono::duration<double>(t1 - t0).count() << endl;
-	cout << perft << endl;
-	exit(0);
+	// exit(0);
 	for(;;) {
 		string inp;
 		getline(cin, inp);
@@ -77,50 +91,16 @@ int main() {
 			printb();
 			mv ^= 1;
 			int ind = minimax(0, mv)[0];
-			// cout << perft << endl;
 			movegen(mv);
 			cout << mvs << endl;
 			for(int i = 0 ; i < mvs ; i++) {
 				CMove Move = Moves[i];
 				cout << conv(Move) << endl;
-			// 	if(Move.from&0x88 or Move.to&0x88) {
-			//         cout << Move.from << " " << Move.to << endl;
-			//         cout << "BRO" << endl;
-			//         exit(0);
-			//     }
-
-			//     if(Board[Move.from] == K) {
-			//         if(color[Move.from]) wkpos = Move.to;
-			//         else bkpos = Move.to;
-			//     }
-
-			//     Piece cap = Board[Move.to];
-			//     u8 clr = color[Move.to];
-			//     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
-			//     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
-			//     Board[Move.to] = Board[Move.from];
-			//     Board[Move.from] = EMP;
-			//     color[Move.to] = color[Move.from];
-			//     color[Move.from] = 2;
-			//     if(incheck(color[Move.to], 1)) {
-			//     	cout << conv(Move) << endl;
-			// 	}
-
-		    //     Board[Move.from] = Board[Move.to];
-		    //     Board[Move.to] = cap;
-		    //     color[Move.from] = color[Move.to];
-		    //     color[Move.to] = clr;
-		    //     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
-		    //     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
-		    //     if(Board[Move.from] == K) {
-		    //         if(color[Move.from]) wkpos = Move.from;
-		    //         else bkpos = Move.from;
-		    //     }
 			}
 
 			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
-			cout << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
+			cout << perft << " " << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
 		}
 	}
 }
