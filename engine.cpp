@@ -65,7 +65,7 @@ int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-50,-30,-30,-30,-30,-30,-30,-50};
 
 int evaluate() {
-    const int Pvals[6] = {100, 200, 450, 500, 1000, 0};
+    const int Pvals[6] = {150, 400, 450, 700, 1200, 0};
     int score_w = 0, score_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
 		int r = i >> 4;

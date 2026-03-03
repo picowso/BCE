@@ -158,6 +158,12 @@ void domove(CMove Move, bool roll) {
     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
     zob_c ^= zobrist[Move.from][Board[Move.from]][color[Move.from]];
     ztable[zob_c]++;
+
+    // en passant
+    if(Move.flag == 1) {
+        Board[Move.to + pdir[!color[Move.to]]] = EMP;
+        color[Move.to + pdir[!color[Move.to]]] = 2;
+    }
 }
 
 void undomove() {
@@ -184,6 +190,12 @@ void undomove() {
     color[rb.to] = rb_c[rb_p];
     zob_c ^= zobrist[rb.to][Board[rb.to]][color[rb.to]];
     zob_c ^= zobrist[rb.from][Board[rb.from]][color[rb.from]];
+
+    // en passant
+    if(rb.flag == 1) {
+        Board[rb.to + pdir[!color[rb.to]]] = P;
+        color[rb.to + pdir[!color[rb.to]]] = !color[rb.from];
+    }
 }
 
 void AddMove(int from, int to, int flag, Piece promo) {
@@ -195,13 +207,14 @@ void AddMove(int from, int to, int flag, Piece promo) {
     domove(m, 1);
 
     if(!incheck(color[to])) {
-        Moves[mvs++] = m;   // only store if legal
+        Moves[mvs++] = m;
     }
 
     undomove();
 }
 
 // TODO: en passant, castling
+extern CMove Lm; // last move!
 void movegen(bool mv) {
     mvs = 0;
     for(int i = 0 ; i < 128 ; i++) {
@@ -216,13 +229,22 @@ void movegen(bool mv) {
             int p1 = i + t + 1;
             int p2 = i + t - 1;
             int r = i >> 4;
-            if(Board[p1] != EMP and color[p1] != color[i]) AddMove(i, p1, 0, EMP);
-            if(Board[p2] != EMP and color[p2] != color[i]) AddMove(i, p2, 0, EMP);
+            bool promo = (color[i] and r == 1) or (!color[i] and r == 6);
+
+            // capture
+            if(Board[p1] != EMP and color[p1] != color[i]) {
+                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p1, 0, (Piece)j);
+                else AddMove(i, p1, 0, EMP);
+            }
+
+            if(Board[p2] != EMP and color[p2] != color[i]) {
+                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p2, 0, (Piece)j);
+                else AddMove(i, p2, 0, EMP);
+            }
 
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
-
-            if((color[i] and r == 1) or (!color[i] and r == 6)) {
+            if(promo) {
                 for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)j);
             } else AddMove(i, i + t, 0, EMP);
 
@@ -230,7 +252,11 @@ void movegen(bool mv) {
             if((!color[i] and r == 1) or (color[i] and r == 6)) AddMove(i, i + 2*t, 0, EMP);
             
             // en passant
-            continue;
+            bool m2 = (Lm.from >> 4 == 6 and Lm.to >> 4 == 4 and color[Lm.to]) or (Lm.from >> 4 == 1 and Lm.to >> 4 == 3 and !color[Lm.to]);
+            if(m2 and Board[Lm.to] == P) {
+                if(i+1 == Lm.to) AddMove(i, p1, 1, EMP);
+                if(i-1 == Lm.to) AddMove(i, p2, 1, EMP);
+            }
         }
 
         else for(int j = 0 ; j < rays_s[p] ; j++) {

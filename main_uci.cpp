@@ -25,6 +25,7 @@ extern u64 zob_c;
 extern gp_hash_table<u64, u64> ztable;
 extern int wkpos, bkpos;
 extern int perft;
+CMove Lm = {0, 0, EMP, EMP, 0}; // last move!
 int main() {
 	build_board();
 	// auto t0 = chrono::high_resolution_clock::now();
@@ -71,12 +72,13 @@ int main() {
 			for(int i = 0 ; i < mvs ; i++) {
 				string c = conv(Moves[i]);
 				if(c == u) {
+					Lm = Moves[i];
 					domove(Moves[i], 0);
 					break;
 				}
 			}
 
-			cout << "OMG " << ztable[zob_c] << endl;
+			// cout << "OMG " << ztable[zob_c] << endl;
 		}
 
 		else if(inp.substr(0, 2) == "go") {
@@ -90,6 +92,7 @@ int main() {
 			// 	cout << conv(Move) << endl;
 			// }
 
+			Lm = Moves[ind];
 			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
 			// cout << perft << " " << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
