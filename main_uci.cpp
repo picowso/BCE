@@ -27,21 +27,13 @@ extern int wkpos, bkpos;
 extern int perft;
 int main() {
 	build_board();
-	auto t0 = chrono::high_resolution_clock::now();
-	movegen(0);
-	int u = mvs;
-	vector<CMove> q(u);
-	for(int i = 0 ; i < u ; i++) q[i] = Moves[i];
-	for(int i = 0 ; i < u ; i++) {
-		domove(q[i], 1);
-		// cout << conv(q[i]) << " " << perft(0, 2, 1) << endl;
-		undomove();
-	}
-
+	// auto t0 = chrono::high_resolution_clock::now();
+	// cout << minimax(0, 1)[1] << endl;
+	// cout << perft << endl;
 	// cout << perft(0, 3, 0) << endl;
 	// for(int i = 1 ; i < 5 ; i++) cout << perft(0, i, 1) << endl;
-	auto t1 = chrono::high_resolution_clock::now();
-	cout << chrono::duration<double>(t1 - t0).count() << endl;
+	// auto t1 = chrono::high_resolution_clock::now();
+	// cout << chrono::duration<double>(t1 - t0).count() << endl;
 	// exit(0);
 	for(;;) {
 		string inp;
@@ -88,19 +80,19 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
-			printb();
+			// printb();
 			mv ^= 1;
 			int ind = minimax(0, mv)[0];
 			movegen(mv);
-			cout << mvs << endl;
-			for(int i = 0 ; i < mvs ; i++) {
-				CMove Move = Moves[i];
-				cout << conv(Move) << endl;
-			}
+			// cout << mvs << endl;
+			// for(int i = 0 ; i < mvs ; i++) {
+			// 	CMove Move = Moves[i];
+			// 	cout << conv(Move) << endl;
+			// }
 
 			cout << "bestmove " << conv(Moves[ind]) << endl;
 			domove(Moves[ind], 0);
-			cout << perft << " " << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
+			// cout << perft << " " << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
 		}
 	}
 }

@@ -64,8 +64,8 @@ void build_board() {
     Board[7] = R;
     for(int i = 0 ; i < 8 ; i++) Board[i+112] = Board[i];
 
-    wkpos = 4;
-    bkpos = 116;
+    wkpos = 116;
+    bkpos = 4;
     // zobrist
     zob_c = 0;
     mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
