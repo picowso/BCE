@@ -152,7 +152,6 @@ void domove(CMove Move, bool roll) {
     zob_c ^= zobrist[Move.to][Board[Move.to]][color[Move.to]];
     Board[Move.to] = Board[Move.from];
     if(Move.promo != EMP) Board[Move.to] = Move.promo;
-
     Board[Move.from] = EMP;
     color[Move.to] = color[Move.from];
     color[Move.from] = 2;
@@ -222,11 +221,10 @@ void movegen(bool mv) {
 
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
-            AddMove(i, i + t, 0, EMP);
 
             if((color[i] and r == 1) or (!color[i] and r == 6)) {
                 for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)j);
-            }
+            } else AddMove(i, i + t, 0, EMP);
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;
             if((!color[i] and r == 1) or (color[i] and r == 6)) AddMove(i, i + 2*t, 0, EMP);
