@@ -83,8 +83,8 @@ void build_board() {
     Board[114] = WB;
     Board[115] = WQ;
     Board[116] = WK;
-    Board[117] = WB;
-    Board[118] = WN;
+    // Board[117] = WB;
+    // Board[118] = WN;
     Board[119] = WR;
 
     wkpos = 116;
@@ -105,6 +105,10 @@ void build_board() {
     }
 
     ztable[zob_c]++;
+}
+
+void build_fromfen(string str) {
+
 }
 
 bool incheck(bool kc, bool u) {
@@ -286,13 +290,13 @@ void undomove() {
 
     // short castling
     if(rb.flag == 2) {
-        Piece m = Board[rb.to+1];
-        zob(rb.to-2);
+        Piece m = Board[rb.to-1];
+        zob(rb.to-1);
         zob(rb.to+1);
-        Board[rb.to+1] = EMP;
-        Board[rb.to-2] = m;
+        Board[rb.to+1] = m;
+        Board[rb.to-1] = EMP;
         zob(rb.to+1);
-        zob(rb.to-2);
+        zob(rb.to-1);
     }
 
     // long castling
@@ -300,8 +304,8 @@ void undomove() {
         Piece m = Board[rb.to+1];
         zob(rb.to-2);
         zob(rb.to+1);
-        Board[rb.to-2] = EMP;
-        Board[rb.to+1] = m;
+        Board[rb.to-2] = m;
+        Board[rb.to+1] = EMP;
         zob(rb.to-2);
         zob(rb.to+1);
     }
@@ -326,19 +330,19 @@ void movegen(bool mv) {
     else kp = bkpos;
     // check for castling (holy this is gonna take LONG)
     // short castle
-    // int k = 0;
-    // if(!mv) k = 2;
-    // bool sc = castling&(1 << k); // didnt move
-    // if(sc) sc &= (Board[i+1] == EMP and Board[i+2] == EMP); // empty section
-    // if(sc) sc &= !bincheck(i) and !bincheck(i+1) and !bincheck(i+2); // no checks
-    // if(sc) AddMove(i, i+2, 2, EMP);
+    int k = 0;
+    if(!mv) k = 2;
+    bool sc = castling&(1 << k); // didnt move
+    if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
+    if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
+    if(sc) AddMove(kp, kp+2, 2, EMP);
 
-    // // long castle
-    // k++;
-    // bool lc = castling&(1 << k);
-    // if(sc) sc &= (Board[i-1] == EMP and Board[i-2] == EMP and Board[i-3] == EMP); // empty section
-    // if(sc) sc &= !bincheck(i) and !bincheck(i-1) and !bincheck(i-2); // no checks
-    // if(sc) AddMove(i, i-2, 3, EMP);
+    // long castle
+    k++;
+    bool lc = castling&(1 << k);
+    if(sc) sc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
+    if(sc) sc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
+    if(sc) AddMove(kp, kp-2, 3, EMP);
 
     bitboard = 0;
     if(rb_p>0) Lm = rollback[rb_p-1];

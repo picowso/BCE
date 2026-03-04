@@ -88,6 +88,7 @@ int evaluate() {
 // int perft = 0;
 int perft(int depth, bool turn) {
 	// if(depth == 5) printb();
+	printb();
 	if(depth == DEPTH_LIMIT) return 1;
 	movegen(turn);
 	int s = 0;
