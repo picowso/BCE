@@ -12,9 +12,10 @@
 #include <random>
 #include <chrono>
 #include <cstring>
+#define SETZ(p, i) p = p & ~(1 << i)
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 5;
+const int DEPTH_LIMIT = 7;
 const short INF = 30'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;

@@ -25,8 +25,12 @@ CMove Moves[218]; // https://lichess.org/@/Tobs40/blog/why-a-reachable-position-
 int mvs = 0;
 int rays_s[6] = {0, 8, 4, 4, 8, 8}; // size, slight optimization
 
+// rollback
+u8 castling = 0xf;
 CMove rollback[DEPTH_LIMIT+1];
+u8 rollback_c[DEPTH_LIMIT+1]; // for castling
 int rb_p = 0; // pointer!
+
 bool color(int i) {
     return Board[i] < 6;
 }
@@ -146,6 +150,15 @@ bool incheck(bool kc, bool u) {
     return 0;
 }
 
+// same as incheck, butMUST have used movegen before
+u64 bitboard = 0;
+bool bincheck(int i) {
+    int r = i >> 4;
+    int f = i & 7;
+    int u = 8*r + f;
+    return bitboard & (1LL << u);
+}
+
 void domove(CMove Move, bool roll) {
     if(Move.from&0x88 or Move.to&0x88) {
         cout << Move.from << " " << Move.to << endl;
@@ -155,11 +168,30 @@ void domove(CMove Move, bool roll) {
 
     if(roll) {
         rollback[rb_p] = Move;
+        rollback_c[rb_p] = castling;
         rb_p++;
     }
 
-    if(Board[Move.from] == WK) wkpos = Move.to;
-    else if(Board[Move.from] == BK) bkpos = Move.to;
+    // castling
+    if(Board[Move.from] == WR) {
+        if((Move.from&7) == 0) SETZ(castling, 1);
+        if((Move.from&7) == 7) SETZ(castling, 2);
+    }
+
+    else if(Board[Move.from] == BR) {
+        if((Move.from&7) == 0) SETZ(castling, 4);
+        if((Move.from&7) == 7) SETZ(castling, 8);
+    }
+
+    if(Board[Move.from] == WK) {
+        SETZ(castling, 3);
+        wkpos = Move.to;
+    }
+
+    else if(Board[Move.from] == BK) {
+        SETZ(castling, 12);
+        bkpos = Move.to;
+    }
 
     zob(Move.from);
     zob(Move.to);
@@ -185,6 +217,28 @@ void domove(CMove Move, bool roll) {
         zob(cs);
     }
 
+    // short castling
+    if(Move.flag == 2) {
+        Piece m = Board[Move.to+1];
+        zob(Move.to+1);
+        zob(Move.to-1);
+        Board[Move.to+1] = EMP;
+        Board[Move.to-1] = m;
+        zob(Move.to+1);
+        zob(Move.to-1);
+    }
+
+    // long castling
+    if(Move.flag == 3) {
+        Piece m = Board[Move.to-2];
+        zob(Move.to-2);
+        zob(Move.to+1);
+        Board[Move.to-2] = EMP;
+        Board[Move.to+1] = m;
+        zob(Move.to-2);
+        zob(Move.to+1);
+    }
+
     ztable[zob_c]++;
 }
 
@@ -197,6 +251,7 @@ void undomove() {
 
     rb_p--;
     CMove rb = rollback[rb_p];
+    castling = rollback_c[rb_p];
     ztable[zob_c]--;
     // en passant
     if(rb.flag == 1) {
@@ -220,12 +275,35 @@ void undomove() {
     // zob_c ^= zobrist[rb.to][Board[rb.to]];
     // zob_c ^= zobrist[rb.from][Board[rb.from]];
 
+    // en passant
     if(rb.flag == 1) {
         int cs = rb.to + pdir[!color(rb.from)];
         zob(cs);
         bool mv = color(rb.from);
         Board[cs] = (Piece)(6*mv);
         zob(cs);
+    }
+
+    // short castling
+    if(rb.flag == 2) {
+        Piece m = Board[rb.to+1];
+        zob(rb.to-2);
+        zob(rb.to+1);
+        Board[rb.to+1] = EMP;
+        Board[rb.to-2] = m;
+        zob(rb.to+1);
+        zob(rb.to-2);
+    }
+
+    // long castling
+    if(rb.flag == 3) {
+        Piece m = Board[rb.to+1];
+        zob(rb.to-2);
+        zob(rb.to+1);
+        Board[rb.to-2] = EMP;
+        Board[rb.to+1] = m;
+        zob(rb.to-2);
+        zob(rb.to+1);
     }
 }
 
@@ -243,6 +321,26 @@ void AddMove(int from, int to, int flag, Piece promo) {
 void movegen(bool mv) {
     mvs = 0;
     CMove Lm;
+    int kp;
+    if(mv) kp = wkpos;
+    else kp = bkpos;
+    // check for castling (holy this is gonna take LONG)
+    // short castle
+    // int k = 0;
+    // if(!mv) k = 2;
+    // bool sc = castling&(1 << k); // didnt move
+    // if(sc) sc &= (Board[i+1] == EMP and Board[i+2] == EMP); // empty section
+    // if(sc) sc &= !bincheck(i) and !bincheck(i+1) and !bincheck(i+2); // no checks
+    // if(sc) AddMove(i, i+2, 2, EMP);
+
+    // // long castle
+    // k++;
+    // bool lc = castling&(1 << k);
+    // if(sc) sc &= (Board[i-1] == EMP and Board[i-2] == EMP and Board[i-3] == EMP); // empty section
+    // if(sc) sc &= !bincheck(i) and !bincheck(i-1) and !bincheck(i-2); // no checks
+    // if(sc) AddMove(i, i-2, 3, EMP);
+
+    bitboard = 0;
     if(rb_p>0) Lm = rollback[rb_p-1];
     else Lm = {0,0,EMP,EMP,0};
     for(int i = 0 ; i < 128 ; i++) {

@@ -94,7 +94,7 @@ int perft(int depth, bool turn) {
 	vector<CMove> local(Moves, Moves + mvs);
 	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i], 1);
-		if(local[i].flag) printb();
+		// if(local[i].flag) printb();
 		int m = perft(depth + 1, turn ^ 1);
 		if(depth == 0) cout << conv(local[i]) << " " << m << endl;
 		s += m;
