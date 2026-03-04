@@ -6,4 +6,4 @@ a pseudo-functional and kinda efficient chess engine
 
 ### what should be done:
 
-- [ ] Implement Zobrist Hashing
+- [ ] get rid of color[i] and do it inside of Piece instead!

@@ -1,3 +1,4 @@
+// header.hpp
 #include <iostream>
 #include <vector>
 #include <string>
@@ -13,18 +14,24 @@
 #include <cstring>
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 3;
+const int DEPTH_LIMIT = 5;
 const short INF = 30'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;
 enum Piece : u8 {
-    P = 0,
-    N = 1,
-    B = 2,
-    R = 3,
-    Q = 4,
-    K = 5,
-    EMP = 6
+    WP = 0,
+    WN = 1,
+    WB = 2,
+    WR = 3,
+    WQ = 4,
+    WK = 5,
+    BP = 6,
+    BN = 7,
+    BB = 8,
+    BR = 9,
+    BQ = 10,
+    BK = 11,
+    EMP = 12
 };
 
 using BBT = Piece[128];
@@ -43,4 +50,6 @@ void build_board();
 void undomove();
 void printb();
 bool incheck(bool kc, bool u = 0);
-// int perft(int i, int n, bool turn);
+int perft(int i, bool turn);
+string conv(CMove cmove);
+bool color(int i);

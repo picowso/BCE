@@ -3,7 +3,6 @@
 extern BBT Board;
 extern CMove Moves[218];
 extern int mvs;
-extern u8 color[128];
 extern gp_hash_table<u64, u64> ztable;
 extern u64 zob_c;
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -72,7 +71,7 @@ int evaluate() {
         int f = i & 7;
         if(i&0x88) continue;
         if(Board[i] == EMP) continue;
-        if(color[i]) {
+        if(color(i)) {
         	score_w += Pvals[Board[i]];
         	score_w += PV[Board[i]][r][f];
         }
@@ -86,55 +85,21 @@ int evaluate() {
     return score_w - score_b;
 }
 
-int perft = 0;
-array<short, 2> minimax(int depth, bool turn, int alpha, int beta) {
-	// printb();
-	perft++;
-	if(depth == DEPTH_LIMIT) {
-		return {-1, evaluate()};
-	}
-
-	if(ztable[zob_c] >= 3) {
-		return {-1, 0};
-	}
-
+// int perft = 0;
+int perft(int depth, bool turn) {
+	// if(depth == 5) printb();
+	if(depth == DEPTH_LIMIT) return 1;
 	movegen(turn);
-	int bscore = INF * (turn ? -1 : 1 );
-	u8 ind = 255;
-	// cout << depth << " " << turn << endl;
-	int sz = mvs;
-	CMove local[sz];
-	memcpy(local, Moves, mvs * sizeof(CMove));
-	for(int i = 0 ; i < sz ; i++) {
+	int s = 0;
+	vector<CMove> local(Moves, Moves + mvs);
+	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i], 1);
-		array<short, 2> cscore = minimax(depth + 1, turn ^ 1, alpha, beta);
+		if(local[i].flag) printb();
+		int m = perft(depth + 1, turn ^ 1);
+		if(depth == 0) cout << conv(local[i]) << " " << m << endl;
+		s += m;
 		undomove();
-
-		if(turn) {
-			if(cscore[1] > bscore) {
-				bscore = cscore[1];
-				ind = i;
-			}
-
-			if(cscore[1] >alpha) alpha = cscore[1];
-			// if(beta <= alpha) break;
-		}
-
-		else {
-			if(cscore[1] < bscore) {
-				bscore = cscore[1];
-				ind = i;
-			}
-
-			if(beta > cscore[1]) beta = cscore[1];
-			// if(beta <= alpha) break;
-		}
 	}
 
-	if(ind == 255) {
-		if(incheck(turn)) return {0, (turn ? -INF : INF)};
-		return {0, 0};
-	}
-
-	return {ind, bscore};
+	return s;
 }
