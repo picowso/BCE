@@ -1,6 +1,6 @@
 # Briwats Chess Engine
 
-a pseudo-functional and kinda efficient chess engine
+a pseudo-functional and kinda unefficient chess engine
 
 ---
 
