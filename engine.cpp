@@ -64,26 +64,36 @@ int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-30,-30,  0,  0,  0,  0,-30,-30,
 				-50,-30,-30,-30,-30,-30,-30,-50};
 
+extern int wkpos, bkpos;
 int evaluate() {
     const int Pvals[6] = {250, 600, 650, 1000, 2000, 0};
     int score_w = 0, score_b = 0;
+    int mat_w = 0, mat_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
 		int r = i >> 4;
         int f = i & 7;
         if(i&0x88) continue;
         if(Board[i] == EMP) continue;
         if(color(i)) {
-        	score_w += Pvals[Board[i]];
+        	mat_w += Pvals[Board[i]];
         	score_w += PV[Board[i]][r][f];
         }
 
         else {
-        	score_b += Pvals[Board[i]-6];
+        	mat_b += Pvals[Board[i]-6];
         	score_b += PV[Board[i]-6][7-r][f];
         }
     }
 
-    return score_w - score_b;
+    // endgame!
+    if(min(mat_w, mat_b) <= 2000) {
+    	score_w -= PV[5][wkpos >> 4][wkpos & 7];
+    	score_b -= PV[5][bkpos >> 4][bkpos & 7];
+    	score_w += PV[6][wkpos >> 4][wkpos & 7];
+    	score_b += PV[6][bkpos >> 4][bkpos & 7];
+    }
+
+    return mat_w - mat_b + score_w - score_b;
 }
 
 // int perft = 0;

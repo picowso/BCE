@@ -162,7 +162,6 @@ bool expincheck(bool kc, bool u) {
     return 0;
 }
 
-// same as incheck, butMUST have used movegen before
 u64 bitboard = 0;
 bool bincheck(int i) {
     int r = i >> 4;
@@ -172,8 +171,8 @@ bool bincheck(int i) {
 }
 
 bool incheck(bool turn) {
-    if(turn) return !bincheck[wkpos];
-    return !bincheck[bkpos];
+    if(turn) return !bincheck(wkpos);
+    return !bincheck(bkpos);
 }
 
 void add_bitboard(int i) {
@@ -290,7 +289,7 @@ void undomove() {
     // zob_c ^= zobrist[rb.from][Board[rb.from]];
     // zob_c ^= zobrist[rb.to][Board[rb.to]];
 
-    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*color(rb.to));
+    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*(!color(rb.to)));
     else Board[rb.from] = Board[rb.to];
     Board[rb.to] = rb.capture;
 
@@ -389,12 +388,12 @@ void movegen(bool mv) {
 
             // capture
             if(Board[p1] != EMP and color(p1) != color(i)) {
-                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p1, 0, (Piece)(j+6*color(i)));
+                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p1, 0, (Piece)(j+6*(!color(i))));
                 else AddMove(i, p1, 0, EMP);
             }
 
             if(Board[p2] != EMP and color(p2) != color(i)) {
-                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p2, 0, (Piece)(j+6*color(i)));
+                if(promo) for(int j = 1 ; j < 5 ; j++) AddMove(i, p2, 0, (Piece)(j+6*(!color(i))));
                 else AddMove(i, p2, 0, EMP);
             }
 
@@ -415,7 +414,7 @@ void movegen(bool mv) {
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
             if(promo) {
-                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*color(i)));
+                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*(!color(i))));
             } else AddMove(i, i + t, 0, EMP);
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;
