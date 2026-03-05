@@ -27,10 +27,12 @@ int rays_s[6] = {0, 8, 4, 4, 8, 8}; // size, slight optimization
 
 // rollback
 u8 castling = 0xf;
-CMove rollback[DEPTH_LIMIT+1];
-u8 rollback_c[DEPTH_LIMIT+1]; // for castling
-int rb_p = 0; // pointer!
+CMove rollback[6001]; // claim: chess game can't be longer than 6001 moves, i added 1 to sound correct :pray:
+u8 rollback_c[6001]; // for castling
+CMove lstmv[6001]; // last move
 
+int rb_p = 0; // pointer!
+int lstmv_p = 0;
 bool color(int i) {
     return Board[i] < 6;
 }
@@ -41,16 +43,16 @@ bool samecolor(int i, int j) {
 
 void printb() {
     // string tns = "pnbrqkPNBRQK ";
-    array<char8_t[4], 13> tns = {
+    array<char8_t[4], 12> tns = {
+        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",
         u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
-        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",  u8" "
     };
 
     bool u = 0;
     for(int i = 0 ; i < 8 ; i++) {
         for(int j = 0 ; j < 8 ; j++) {
             int k = 16*i + j;
-            if(Board[k] == EMP) cout << " ";
+            if(Board[k] == EMP) cout << "#";
             else cout << reinterpret_cast<const char*>(tns[Board[k]]);
         }
 
@@ -63,6 +65,10 @@ void zob(int i) {
 }
 
 void build_board() {
+    mvs = 0;
+    castling = 0xf;
+    rb_p = 0;
+    lstmv_p = 0;
     for(int i = 0 ; i < 128 ; i++) {
         Board[i] = EMP;
     }
@@ -83,8 +89,8 @@ void build_board() {
     Board[114] = WB;
     Board[115] = WQ;
     Board[116] = WK;
-    // Board[117] = WB;
-    // Board[118] = WN;
+    Board[117] = WB;
+    Board[118] = WN;
     Board[119] = WR;
 
     wkpos = 116;
@@ -176,6 +182,8 @@ void domove(CMove Move, bool roll) {
         rb_p++;
     }
 
+    lstmv[lstmv_p] = Move;
+    lstmv_p++;
     // castling
     if(Board[Move.from] == WR) {
         if((Move.from&7) == 0) SETZ(castling, 1);
@@ -254,6 +262,7 @@ void undomove() {
     }
 
     rb_p--;
+    lstmv_p--;
     CMove rb = rollback[rb_p];
     castling = rollback_c[rb_p];
     ztable[zob_c]--;
@@ -270,7 +279,7 @@ void undomove() {
     // zob_c ^= zobrist[rb.from][Board[rb.from]];
     // zob_c ^= zobrist[rb.to][Board[rb.to]];
 
-    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*color(rb.from));
+    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*!(color(rb.to)));
     else Board[rb.from] = Board[rb.to];
     Board[rb.to] = rb.capture;
 
@@ -330,22 +339,22 @@ void movegen(bool mv) {
     else kp = bkpos;
     // check for castling (holy this is gonna take LONG)
     // short castle
-    int k = 0;
-    if(!mv) k = 2;
-    bool sc = castling&(1 << k); // didnt move
-    if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
-    if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
-    if(sc) AddMove(kp, kp+2, 2, EMP);
+    // int k = 0;
+    // if(!mv) k = 2;
+    // bool sc = castling&(1 << k); // didnt move
+    // if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
+    // if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
+    // if(sc) AddMove(kp, kp+2, 2, EMP);
 
-    // long castle
-    k++;
-    bool lc = castling&(1 << k);
-    if(sc) sc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
-    if(sc) sc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
-    if(sc) AddMove(kp, kp-2, 3, EMP);
+    // // long castle
+    // k++;
+    // bool lc = castling&(1 << k);
+    // if(lc) lc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
+    // if(lc) lc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
+    // if(lc) AddMove(kp, kp-2, 3, EMP);
 
     bitboard = 0;
-    if(rb_p>0) Lm = rollback[rb_p-1];
+    if(rb_p>0) Lm = lstmv[lstmv_p-1];
     else Lm = {0,0,EMP,EMP,0};
     for(int i = 0 ; i < 128 ; i++) {
         if(i&0x88) continue;
@@ -390,7 +399,7 @@ void movegen(bool mv) {
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
             if(promo) {
-                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*color(i)));
+                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*(!color(i))));
             } else AddMove(i, i + t, 0, EMP);
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;

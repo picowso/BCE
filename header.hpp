@@ -12,13 +12,17 @@
 #include <random>
 #include <chrono>
 #include <cstring>
-#define SETZ(p, i) p = p & ~(1 << i)
+#define SETZ(p, i) p = p & ~i;
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 1;
-const short INF = 30'000;
+const int DEPTH_LIMIT = 3;
+const int ITER_LIMIT = 30000000;
+const int INF = 1'000'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;
+const int Pvals[6] = {250, 600, 650, 1000, 2000, 0};
+// tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
+
 enum Piece : u8 {
     WP = 0,
     WN = 1,
@@ -44,7 +48,7 @@ struct CMove {
     u8 flag; // 1 = en passant, 2 = long castle, 3 = short castle
 };
 
-array<short, 2> minimax(int depth, bool turn, int a = -INF, int b = INF);
+int minimax(int depth, bool turn, int a = -INF, int b = INF);
 void movegen(bool turn);
 void domove(CMove Move, bool roll);
 void build_board();

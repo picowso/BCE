@@ -6,7 +6,7 @@ extern int mvs;
 extern gp_hash_table<u64, u64> ztable;
 extern u64 zob_c;
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
-int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
+int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				50, 50, 50, 50, 50, 50, 50, 50,
 				10, 10, 20, 30, 30, 20, 10, 10,
 				 5,  5, 10, 25, 25, 10,  5,  5,
@@ -64,7 +64,7 @@ int PV[8][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-50,-30,-30,-30,-30,-30,-30,-50};
 
 int evaluate() {
-    const int Pvals[6] = {150, 400, 450, 700, 1200, 0};
+    const int Pvals[6] = {250, 600, 650, 1000, 2000, 0};
     int score_w = 0, score_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
 		int r = i >> 4;
@@ -77,8 +77,8 @@ int evaluate() {
         }
 
         else {
-        	score_b += Pvals[Board[i]];
-        	score_b += PV[Board[i]][7-r][f];
+        	score_b += Pvals[Board[i]-6];
+        	score_b += PV[Board[i]-6][7-r][f];
         }
     }
 
@@ -103,4 +103,88 @@ int perft(int depth, bool turn) {
 	}
 
 	return s;
+}
+
+int perft_mm = 0;
+extern CMove IND;
+int quiescence(bool turn, int alpha, int beta) {
+	int bs = evaluate();
+	if(turn) {
+		if(bs >= beta) return beta;
+		alpha = max(alpha, bs);
+	}
+
+	else {
+		if(bs <= alpha) return alpha;
+		beta = min(beta, bs);
+	}
+
+	movegen(turn);
+	vector<CMove> local(Moves, Moves + mvs);
+	for(int i = 0 ; i < local.size() ; i++) {
+		if(local[i].capture == EMP) continue;
+		domove(local[i], 1);
+		int ls = quiescence(turn^1, alpha, beta);
+		undomove();
+		if(turn) {
+			alpha = max(alpha, ls);
+			if(alpha >= beta) return alpha;
+		}
+
+		else {
+			beta = min(beta, ls);
+			if(beta <= alpha) return beta;
+		}
+	}
+
+	return bs;
+}
+
+int minimax(int depth, bool turn, int alpha, int beta) {
+	if(depth == DEPTH_LIMIT) return quiescence(turn, alpha, beta);
+	if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
+	perft_mm++;
+	int bs = (turn ? -INF : INF);
+	movegen(turn);
+	if(mvs == 0) {
+		if(incheck(turn)) return (turn ? -INF + depth : INF - depth);
+		else return 0;
+	}
+
+	vector<CMove> local(mvs);
+	for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
+	// sort(local.begin(), local.end(), [&](CMove a, CMove b) {
+	// 	int k = 6*(!color(a.from));
+	// 	int k2 = 6*(!color(b.from));
+	// 	if(a.capture == EMP) k = a.capture + 1;
+	// 	if(b.capture == EMP) k2 = b.capture + 1;
+	// 	return a.capture - k < b.capture - k2;
+	// });
+
+	for(int i = 0 ; i < local.size() ; i++) {
+		domove(local[i], 1);
+		int ls = minimax(depth + 1, turn ^ 1, alpha, beta);
+		undomove();
+		if(turn) {
+			if(ls > bs) {
+				if(depth == 0) IND = local[i];
+				bs = ls;
+			}
+
+			alpha = max(alpha, bs);
+			if(beta <= alpha) break;
+		}
+
+		else {
+			if(ls < bs) {
+				if(depth == 0) IND = local[i];
+				bs = ls;
+			}
+
+			beta = min(beta, bs);
+			if(beta <= alpha) break;
+		}
+	}
+
+	return bs;
 }
