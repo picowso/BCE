@@ -108,12 +108,12 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
+			movegen(mv);
 			perft_mm = 0;
-			// IND = -1;
+			IND = Moves[0];
 			auto t0 = chrono::high_resolution_clock::now();
 			minimax(0, mv);
 			auto t1 = chrono::high_resolution_clock::now();
-			movegen(mv);
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
 			cout << perft_mm << " " << chrono::duration<double>(t1 - t0).count() << endl;

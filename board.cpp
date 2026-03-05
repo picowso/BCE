@@ -119,7 +119,7 @@ void build_fromfen(string str) {
 
 }
 
-bool incheck(bool kc, bool u) {
+bool expincheck(bool kc, bool u) {
     int i;
     if(kc) i = wkpos;
     else i = bkpos;
@@ -169,6 +169,11 @@ bool bincheck(int i) {
     int f = i & 7;
     int u = 8*r + f;
     return bitboard & (1LL << u);
+}
+
+bool incheck(bool turn) {
+    if(turn) return !bincheck[wkpos];
+    return !bincheck[bkpos];
 }
 
 void add_bitboard(int i) {
@@ -333,7 +338,7 @@ void AddMove(int from, int to, int flag, Piece promo) {
     CMove m = {from, to, Board[to], promo, flag};
     bool good = 0;
     domove(m, 1);
-    if(!incheck(color(to))) {
+    if(!expincheck(color(to), 0)) {
         Moves[mvs++] = m;
         good = 1;
     }
@@ -342,7 +347,6 @@ void AddMove(int from, int to, int flag, Piece promo) {
     if(good) add_bitboard(to);
 }
 
-// TODO: en passant, castling
 void movegen(bool mv) {
     mvs = 0;
     CMove Lm;
@@ -411,7 +415,7 @@ void movegen(bool mv) {
             // moves
             if(((i+t) & 0x88) or Board[i + t] != EMP) continue;
             if(promo) {
-                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*(!color(i))));
+                for(int j = 1 ; j < 5 ; j++) AddMove(i, i + t, 0, (Piece)(j + 6*color(i)));
             } else AddMove(i, i + t, 0, EMP);
 
             if(((i+2*t) & 0x88) or Board[i + 2*t] != EMP) continue;

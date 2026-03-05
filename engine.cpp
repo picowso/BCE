@@ -78,8 +78,8 @@ int evaluate() {
         }
 
         else {
-        	score_b += Pvals[Board[i]];
-        	score_b += PV[Board[i]][7-r][f];
+        	score_b += Pvals[Board[i]-6];
+        	score_b += PV[Board[i]-6][7-r][f];
         }
     }
 
@@ -125,12 +125,12 @@ int quiescence(bool turn, int alpha, int beta) {
 
 	movegen(turn);
 	if(mvs == 0) {
-		if(bincheck(turn)) return (turn ? -INF : INF);
+		if(incheck(turn)) return (turn ? -INF : INF);
 		else return 0;
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
-	sort(local.begin(), local.end(), [&](CMove a, CMove b) {
+	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
 		return Pvals[a.capture] < Pvals[b.capture];
 	});
 
@@ -161,15 +161,15 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 	int bs = (turn ? -INF : INF);
 	movegen(turn);
 	if(mvs == 0) {
-		if(bincheck(turn)) return (turn ? -INF + depth : INF - depth);
+		if(incheck(turn)) return (turn ? -INF + depth : INF - depth);
 		else return 0;
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
-	// sort(local.begin(), local.end(), [&](CMove a, CMove b) {
-	// 	return Pvals[a.capture] < Pvals[b.capture];
-	// });
+	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
+		return Pvals[a.capture] < Pvals[b.capture];
+	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i], 1);

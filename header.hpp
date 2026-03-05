@@ -44,7 +44,7 @@ struct CMove {
     u8 to; // to
     Piece capture; // the piece captured
     Piece promo; // piece we're promoting to (EMP else pawn promotion)
-    u8 flag; // 1 = en passant, 2 = long castle, 3 = short castle
+    u8 flag; // 1 = en passant, 2 = s castle, 3 = l castle
 };
 
 int minimax(int depth, bool turn, int a = -INF, int b = INF);
@@ -53,7 +53,7 @@ void domove(CMove Move, bool roll);
 void build_board();
 void undomove();
 void printb();
-bool incheck(bool kc, bool u = 0);
+bool incheck(bool kc);
 int perft(int i, bool turn);
 string conv(CMove cmove);
 bool color(int i);
