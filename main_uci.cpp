@@ -91,7 +91,7 @@ int main() {
 						domove(Moves[j], 1);
 						mv ^= 1;
 						fnd = 1;
-						break;
+						break; 
 					}
 				}
 

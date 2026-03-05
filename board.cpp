@@ -42,18 +42,19 @@ bool samecolor(int i, int j) {
 }
 
 void printb() {
-    // string tns = "pnbrqkPNBRQK ";
-    array<char8_t[4], 12> tns = {
-        u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",
-        u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
-    };
+    string tns = "pnbrqkPNBRQK ";
+    // array<char8_t[4], 12> tns = {
+    //     u8"\u2659", u8"\u2658", u8"\u2657", u8"\u2656", u8"\u2655", u8"\u2654",
+    //     u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
+    // };
 
     bool u = 0;
     for(int i = 0 ; i < 8 ; i++) {
         for(int j = 0 ; j < 8 ; j++) {
             int k = 16*i + j;
             if(Board[k] == EMP) cout << "#";
-            else cout << reinterpret_cast<const char*>(tns[Board[k]]);
+            // else cout << reinterpret_cast<const char*>(tns[Board[k]]);
+            else cout << tns[Board[k]];
         }
 
         cout << endl;
@@ -113,6 +114,7 @@ void build_board() {
     ztable[zob_c]++;
 }
 
+// TODO
 void build_fromfen(string str) {
 
 }
@@ -125,7 +127,7 @@ bool incheck(bool kc, bool u) {
     // i see you, you see me
     for(int p = 1 ; p < 6 ; p++) {
         for(int j = 0 ; j < rays_s[p] ; j++) {
-            int cur = i;
+            u8 cur = i;
             for(;;) {
                 cur += ray[p][j];
                 if(cur & 0x88) break; // outside the board
@@ -169,6 +171,13 @@ bool bincheck(int i) {
     return bitboard & (1LL << u);
 }
 
+void add_bitboard(int i) {
+    int r = i >> 4;
+    int f = i & 7;
+    int u = 8*r + f;
+    bitboard |= (1LL << u);
+}
+
 void domove(CMove Move, bool roll) {
     if(Move.from&0x88 or Move.to&0x88) {
         cout << Move.from << " " << Move.to << endl;
@@ -176,6 +185,7 @@ void domove(CMove Move, bool roll) {
         exit(0);
     }
 
+    bool mvc = color(Move.from);
     if(roll) {
         rollback[rb_p] = Move;
         rollback_c[rb_p] = castling;
@@ -222,7 +232,7 @@ void domove(CMove Move, bool roll) {
 
     // en passant
     if(Move.flag == 1) {
-        int cs = Move.to + pdir[!color(Move.to)];
+        int cs = Move.to + pdir[!mvc];
         // if(roll) rollback[rb_p-1].capture = Board[cs];
         zob(cs);
         Board[cs] = EMP;
@@ -266,10 +276,6 @@ void undomove() {
     CMove rb = rollback[rb_p];
     castling = rollback_c[rb_p];
     ztable[zob_c]--;
-    // en passant
-    if(rb.flag == 1) {
-        int cs = rb.to + pdir[!color(rb.to)];
-    }
 
     if(Board[rb.to] == WK) wkpos = rb.from;
     else if(Board[rb.to] == BK) bkpos = rb.from;
@@ -279,7 +285,7 @@ void undomove() {
     // zob_c ^= zobrist[rb.from][Board[rb.from]];
     // zob_c ^= zobrist[rb.to][Board[rb.to]];
 
-    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*!(color(rb.to)));
+    if(rb.promo != EMP) Board[rb.from] = (Piece)(6*color(rb.to));
     else Board[rb.from] = Board[rb.to];
     Board[rb.to] = rb.capture;
 
@@ -290,10 +296,10 @@ void undomove() {
 
     // en passant
     if(rb.flag == 1) {
-        int cs = rb.to + pdir[!color(rb.from)];
+        bool mvcol = color(rb.from);
+        int cs = rb.to + pdir[!mvcol];
         zob(cs);
-        bool mv = color(rb.from);
-        Board[cs] = (Piece)(6*mv);
+        Board[cs] = (Piece)(6*mvcol);
         zob(cs);
     }
 
@@ -325,9 +331,15 @@ void AddMove(int from, int to, int flag, Piece promo) {
     if(from&0x88 or to&0x88) return;
     // Moves[mvs] = {from, to, Board[to], promo, 0};
     CMove m = {from, to, Board[to], promo, flag};
+    bool good = 0;
     domove(m, 1);
-    if(!incheck(color(to))) Moves[mvs++] = m;
+    if(!incheck(color(to))) {
+        Moves[mvs++] = m;
+        good = 1;
+    }
+
     undomove();
+    if(good) add_bitboard(to);
 }
 
 // TODO: en passant, castling
@@ -339,19 +351,19 @@ void movegen(bool mv) {
     else kp = bkpos;
     // check for castling (holy this is gonna take LONG)
     // short castle
-    // int k = 0;
-    // if(!mv) k = 2;
-    // bool sc = castling&(1 << k); // didnt move
-    // if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
-    // if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
-    // if(sc) AddMove(kp, kp+2, 2, EMP);
+    int k = 0;
+    if(!mv) k = 2;
+    bool sc = castling&(1 << k); // didnt move
+    if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
+    if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
+    if(sc) AddMove(kp, kp+2, 2, EMP);
 
-    // // long castle
-    // k++;
-    // bool lc = castling&(1 << k);
-    // if(lc) lc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
-    // if(lc) lc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
-    // if(lc) AddMove(kp, kp-2, 3, EMP);
+    // long castle
+    k++;
+    bool lc = castling&(1 << k);
+    if(lc) lc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
+    if(lc) lc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
+    if(lc) AddMove(kp, kp-2, 3, EMP);
 
     bitboard = 0;
     if(rb_p>0) Lm = lstmv[lstmv_p-1];
@@ -407,7 +419,7 @@ void movegen(bool mv) {
         }
 
         else for(int j = 0 ; j < rays_s[tp] ; j++) {
-            int cur = i;
+            u8 cur = i;
             // cout << "k" << p << " " << cur << " " << j << " " << rays_s[p] << endl;
             for(;;) {
                 cur += ray[tp][j];

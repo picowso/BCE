@@ -15,13 +15,12 @@
 #define SETZ(p, i) p = p & ~i;
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 3;
+const int DEPTH_LIMIT = 5;
 const int ITER_LIMIT = 30000000;
 const int INF = 1'000'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;
-const int Pvals[6] = {250, 600, 650, 1000, 2000, 0};
-// tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
+const int Pvals[13] = {250, 600, 650, 1000, 2000, 0, 250, 600, 650, 1000, 2000, 0, 0};
 
 enum Piece : u8 {
     WP = 0,
@@ -58,3 +57,4 @@ bool incheck(bool kc, bool u = 0);
 int perft(int i, bool turn);
 string conv(CMove cmove);
 bool color(int i);
+bool bincheck(int i);
