@@ -191,7 +191,7 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 	movegen(turn);
 	for(int i = 0 ; i < mvs ; i++) if(depth == 0 and (Moves[i].flag==2 or Moves[i].flag==3)) cout << conv(Moves[i]) << endl;
 	if(mvs == 0) {
-		if(incheck(turn)) return (turn ? -INF : INF );
+		if(incheck(turn)) return bs;
 		else return 0;
 	}
 

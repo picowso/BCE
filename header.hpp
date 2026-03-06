@@ -17,7 +17,7 @@ using namespace __gnu_pbds;
 using namespace std;
 const int DEPTH_LIMIT = 6;
 const int ITER_LIMIT = 3'000'000;
-const int INF = 1'000'000;
+const int INF = 100'000'000;
 using u8 = unsigned char; // BYTE
 using u64 = unsigned long long;
 const int Pvals[13] = {250, 600, 650, 1000, 2000, 0, 250, 600, 650, 1000, 2000, 0, 0};
