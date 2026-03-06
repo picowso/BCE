@@ -26,7 +26,7 @@ int mvs = 0;
 int rays_s[6] = {0, 8, 4, 4, 8, 8}; // size, slight optimization
 
 // rollback
-u8 castling = 0xf;
+u8 castling = 15;
 CMove rollback[6001]; // claim: chess game can't be longer than 6001 moves, i added 1 to sound correct :pray:
 u8 rollback_c[6001]; // for castling
 CMove lstmv[6001]; // last move

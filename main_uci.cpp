@@ -73,13 +73,22 @@ int main() {
 			}
 
 			reverse(u.begin(), u.end());
+			build_attack(!mv);
 			movegen(mv);
+			bool fnd = 0;
 			for(int i = 0 ; i < mvs ; i++) {
 				string c = conv(Moves[i]);
+				cout << c << " " << u << endl;
 				if(c == u) {
+					fnd = 1;
 					domove(Moves[i], 0);
 					break;
 				}
+			}
+
+			if(!fnd) {
+				cout << (int)castling << " BROOO" << endl;
+				exit(0);
 			}
 
 			cout << "OMG " << ztable[zob_c] << endl;

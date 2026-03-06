@@ -119,10 +119,17 @@ int perft(int depth, bool turn) {
 }
 
 int perft_mm = 0;
+int tot = 0;
 extern CMove IND;
 int quiescence(bool turn, int alpha, int beta) {
 	perft_mm++;
+	tot++;
 	if(qsearch_v.find(zob_c) != qsearch_v.end()) return qsearch_v[zob_c];
+	if(tot > ITER_LIMIT) {
+		qsearch_v.clear();
+		tot = 0;
+	}
+
 	if(ztable[zob_c] >= 3) return 0;
 	int bs = evaluate();
 	if(turn) {
@@ -136,7 +143,7 @@ int quiescence(bool turn, int alpha, int beta) {
 	}
 
 	// bool check = incheck(turn);
-	build_attack(turn);
+	build_attack(!turn);
 	movegen(turn);
 	if(mvs == 0) {
 		if(incheck(turn)) return (turn ? -INF : INF);
@@ -144,6 +151,16 @@ int quiescence(bool turn, int alpha, int beta) {
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
+	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
+		int av = Pvals[a.capture%6];
+		int bv = Pvals[b.capture%6];
+		if(av != bv) return av < bv;
+		int ai = Board[a.from], bi = Board[b.from];
+		if(ai > 5) ai -= 6;
+		if(bi > 5) bi -= 6;
+		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) > (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+	});
+
 	for(int i = 0 ; i < local.size() ; i++) {
 		if(local[i].capture == EMP) continue;
 		domove(local[i], 1);
@@ -165,23 +182,29 @@ int quiescence(bool turn, int alpha, int beta) {
 
 int minimax(int depth, bool turn, int alpha, int beta) {
 	if(depth == DEPTH_LIMIT) return quiescence(turn, alpha, beta);
-	if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
+	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
 	if(ztable[zob_c] >= 3) return 0;
-	perft_mm++;
+	// perft_mm++;
 	int bs = (turn ? -INF : INF);
 	// bool check = incheck(turn);
-	build_attack(turn);
+	build_attack(!turn);
 	movegen(turn);
 	for(int i = 0 ; i < mvs ; i++) if(depth == 0 and (Moves[i].flag==2 or Moves[i].flag==3)) cout << conv(Moves[i]) << endl;
 	if(mvs == 0) {
-		if(incheck(turn)) return (turn ? -INF - depth : INF + depth);
+		if(incheck(turn)) return (turn ? -INF : INF );
 		else return 0;
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
 	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
-		return Pvals[a.capture] < Pvals[b.capture];
+		int av = Pvals[a.capture%6];
+		int bv = Pvals[b.capture%6];
+		if(av != bv) return av < bv;
+		int ai = Board[a.from], bi = Board[b.from];
+		if(ai > 5) ai -= 6;
+		if(bi > 5) bi -= 6;
+		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) > (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
