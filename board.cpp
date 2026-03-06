@@ -407,7 +407,6 @@ void movegen(bool mv) {
     else kp = bkpos;
     // check for castling (holy this is gonna take LONG)
     // short castle
-    build_attack(!mv);
     int k = 0;
     if(!mv) k = 2;
     bool sc = castling&(1 << k); // didnt move

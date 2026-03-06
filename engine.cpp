@@ -135,10 +135,11 @@ int quiescence(bool turn, int alpha, int beta) {
 		beta = min(beta, bs);
 	}
 
-	bool check = incheck(turn);
+	// bool check = incheck(turn);
+	build_attack(turn);
 	movegen(turn);
 	if(mvs == 0) {
-		if(check) return (turn ? -INF : INF);
+		if(incheck(turn)) return (turn ? -INF : INF);
 		else return 0;
 	}
 
@@ -168,11 +169,12 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 	if(ztable[zob_c] >= 3) return 0;
 	perft_mm++;
 	int bs = (turn ? -INF : INF);
-	bool check = incheck(turn);
+	// bool check = incheck(turn);
+	build_attack(turn);
 	movegen(turn);
 	for(int i = 0 ; i < mvs ; i++) if(depth == 0 and (Moves[i].flag==2 or Moves[i].flag==3)) cout << conv(Moves[i]) << endl;
 	if(mvs == 0) {
-		if(check) return (turn ? -INF + depth : INF - depth);
+		if(incheck(turn)) return (turn ? -INF - depth : INF + depth);
 		else return 0;
 	}
 

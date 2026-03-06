@@ -15,7 +15,7 @@
 #define SETZ(p, i) p = p & ~i;
 using namespace __gnu_pbds;
 using namespace std;
-const int DEPTH_LIMIT = 4;
+const int DEPTH_LIMIT = 5;
 const int ITER_LIMIT = 30000000;
 const int INF = 1'000'000;
 using u8 = unsigned char; // BYTE
@@ -58,3 +58,4 @@ int perft(int i, bool turn);
 string conv(CMove cmove);
 bool color(int i);
 bool bincheck(int i);
+void build_attack(bool u);
