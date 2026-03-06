@@ -5,6 +5,8 @@ extern CMove Moves[218];
 extern int mvs;
 extern gp_hash_table<u64, u64> ztable;
 gp_hash_table<u64, int> qsearch_v;
+map<pair<u64, u64>, u64> perft_t;
+
 extern u64 zob_c;
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
 int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
@@ -31,14 +33,14 @@ int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-10, 10, 10, 10, 10, 10, 10,-10,
 				-10,  5,  0,  0,  0,  0,  5,-10,
 				-20,-10,-10,-10,-10,-10,-10,-20,
-				0,  0,  0,  0,  0,  0,  0,  0,
+				 0,  0,  0,  0,  0,  0,  0,  0,
 				  5, 10, 10, 10, 10, 10, 10,  5,
 				 -5,  0,  0,  0,  0,  0,  0, -5,
 				 -5,  0,  0,  0,  0,  0,  0, -5,
 				 -5,  0,  0,  0,  0,  0,  0, -5,
 				 -5,  0,  0,  0,  0,  0,  0, -5,
 				 -5,  0,  0,  0,  0,  0,  0, -5,
-				  0,  0,  0,  5,  5,  0,  0,  0,
+				  0,  0,  10,  11,  11,  10,  0,  0,
 				-20,-10,-10, -5, -5,-10,-10,-20,
 				-10,  0,  0,  0,  0,  0,  0,-10,
 				-10,  0,  5,  5,  5,  5,  0,-10,
@@ -54,7 +56,7 @@ int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 				-20,-30,-30,-40,-40,-30,-30,-20,
 				-10,-20,-20,-20,-20,-20,-20,-10,
 				 20, 20,  0,  0,  0,  0, 20, 20,
-				 20, 30, 10,  0,  0, 10, 30, 20,
+				 20, 60, 10,  0,  0, 10, 60, 20,
 				-50,-40,-30,-20,-20,-30,-40,-50,
 				-30,-20,-10,  0,  0,-10,-20,-30,
 				-30,-10, 20, 30, 30, 20,-10,-30,
@@ -66,7 +68,7 @@ int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 
 extern int wkpos, bkpos;
 int evaluate() {
-    const int Pvals[6] = {250, 600, 650, 1000, 2000, 0};
+    const int Pvals[6] = {40, 100, 130, 400, 1000, 0};
     int score_w = 0, score_b = 0;
     int mat_w = 0, mat_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
@@ -133,17 +135,14 @@ int quiescence(bool turn, int alpha, int beta) {
 		beta = min(beta, bs);
 	}
 
+	bool check = incheck(turn);
 	movegen(turn);
 	if(mvs == 0) {
-		if(incheck(turn)) return (turn ? -INF : INF);
+		if(check) return (turn ? -INF : INF);
 		else return 0;
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
-	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
-		return Pvals[a.capture] < Pvals[b.capture];
-	});
-
 	for(int i = 0 ; i < local.size() ; i++) {
 		if(local[i].capture == EMP) continue;
 		domove(local[i], 1);
@@ -169,9 +168,11 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 	if(ztable[zob_c] >= 3) return 0;
 	perft_mm++;
 	int bs = (turn ? -INF : INF);
+	bool check = incheck(turn);
 	movegen(turn);
+	for(int i = 0 ; i < mvs ; i++) if(depth == 0 and (Moves[i].flag==2 or Moves[i].flag==3)) cout << conv(Moves[i]) << endl;
 	if(mvs == 0) {
-		if(incheck(turn)) return (turn ? -INF + depth : INF - depth);
+		if(check) return (turn ? -INF + depth : INF - depth);
 		else return 0;
 	}
 

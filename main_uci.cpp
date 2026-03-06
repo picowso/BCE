@@ -34,6 +34,7 @@ CMove IND = {0,0,EMP,EMP,0};
 int main() {
 	build_board();
 	printb();
+	movegen(!mv);
 	// auto t0 = chrono::high_resolution_clock::now();
 	// // cout << minimax(0, 1)[1] << endl;
 	// cout << perft(0, 1) << endl;
@@ -64,56 +65,35 @@ int main() {
 		}
 
 		else if(inp.substr(0, 23) == "position startpos moves") {
-			mv = 1;
-			build_board();
-			string u = inp;
-			u.push_back(' ');
-			vector<string> gg;
-			string cr = "";
-			for(int i = 23 ; i < u.size() ; i++) {
-				if(u[i] == ' ') {
-					if(cr.size()) gg.push_back(cr);
-					cr = "";
-					continue;
-				}
-
-				cr.push_back(u[i]);
-			}
-
-			for(int i = 0 ; i < gg.size() ; i++) {
-				movegen(mv);
-				bool fnd = 0;
-				for(int j = 0 ; j < mvs ; j++) {
-					string c = conv(Moves[j]);
-					// cout << c << " " << gg[i] << endl;
-					if(c == gg[i]) {
-						// cout << "uwu" << endl;
-						domove(Moves[j], 1);
-						mv ^= 1;
-						fnd = 1;
-						break; 
-					}
-				}
-
-				if(!fnd) {
-					cout << gg[i] << " " << i << " fix me" << endl;
-					exit(0);
-				}
-			}
-
-			cout << castling << endl;
 			printb();
+			string u;
+			for(int i = inp.size()-1 ; i >= 0 ; i--) {
+				if(inp[i] == ' ') break;
+				u.push_back(inp[i]);
+			}
 
+			reverse(u.begin(), u.end());
+			movegen(mv);
+			for(int i = 0 ; i < mvs ; i++) {
+				string c = conv(Moves[i]);
+				if(c == u) {
+					domove(Moves[i], 0);
+					break;
+				}
+			}
+
+			cout << "OMG " << ztable[zob_c] << endl;
+			mv ^= 1;
 			// cout << "OMG " << ztable[zob_c] << endl;
 		}
 
 		else if(inp.substr(0, 2) == "go") {
-			movegen(mv);
 			perft_mm = 0;
 			IND = Moves[0];
 			auto t0 = chrono::high_resolution_clock::now();
 			minimax(0, mv);
 			auto t1 = chrono::high_resolution_clock::now();
+			movegen(mv);
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
 			cout << perft_mm << " " << chrono::duration<double>(t1 - t0).count() << endl;

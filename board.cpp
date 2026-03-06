@@ -171,15 +171,56 @@ bool bincheck(int i) {
 }
 
 bool incheck(bool turn) {
-    if(turn) return !bincheck(wkpos);
-    return !bincheck(bkpos);
+    if(turn) return bincheck(wkpos);
+    return bincheck(bkpos);
 }
 
 void add_bitboard(int i) {
+    if(i&0x88) return;
     int r = i >> 4;
     int f = i & 7;
     int u = 8*r + f;
     bitboard |= (1LL << u);
+}
+
+void build_attack(bool mv) {
+    bitboard = 0;
+    CMove Lm;
+    if(rb_p>0) Lm = lstmv[lstmv_p-1];
+    else Lm = {0,0,EMP,EMP,0};
+    for(int i = 0 ; i < 128 ; i++) {
+        if(i&0x88) continue;
+        Piece p = Board[i];
+        if(color(i) != mv) continue;
+        if(p == EMP) continue;
+        int tp = p;
+        if(tp > 5) tp -= 6;
+        if(p == WP or p == BP) {
+            // capturing
+            int t = pdir[color(i)];
+            u8 p1 = i + t + 1;
+            u8 p2 = i + t - 1;
+            add_bitboard(p1);
+            add_bitboard(p2);
+        }
+
+        else for(int j = 0 ; j < rays_s[tp] ; j++) {
+            u8 cur = i;
+            // cout << "k" << p << " " << cur << " " << j << " " << rays_s[p] << endl;
+            for(;;) {
+                cur += ray[tp][j];
+                if(cur & 0x88) break; // outside the board
+                // cout << cur << endl;
+                if(Board[cur] != EMP) {
+                    if(color(i) != color(cur)) add_bitboard(cur); // capture
+                    break;
+                }
+            
+                add_bitboard(cur); // quiet move
+                if(!slide[tp]) break; // not slidable
+            }
+        }
+    }
 }
 
 void domove(CMove Move, bool roll) {
@@ -199,15 +240,28 @@ void domove(CMove Move, bool roll) {
     lstmv[lstmv_p] = Move;
     lstmv_p++;
     // castling
+    // abcd
+    // ab: L/S BLACK, cd: L/S WHITE
     if(Board[Move.from] == WR) {
-        if((Move.from&7) == 0) SETZ(castling, 1);
-        if((Move.from&7) == 7) SETZ(castling, 2);
+        if((Move.from&7) == 0) SETZ(castling, 2);
+        if((Move.from&7) == 7) SETZ(castling, 1);
     }
 
     else if(Board[Move.from] == BR) {
-        if((Move.from&7) == 0) SETZ(castling, 4);
-        if((Move.from&7) == 7) SETZ(castling, 8);
+        if((Move.from&7) == 0) SETZ(castling, 8);
+        if((Move.from&7) == 7) SETZ(castling, 4);
     }
+
+    if(Board[Move.to] == WR) {
+        if((Move.to&7) == 0) SETZ(castling, 2);
+        if((Move.to&7) == 7) SETZ(castling, 1);
+    }
+
+    else if(Board[Move.to] == BR) {
+        if((Move.to&7) == 0) SETZ(castling, 8);
+        if((Move.to&7) == 7) SETZ(castling, 4);
+    }
+
 
     if(Board[Move.from] == WK) {
         SETZ(castling, 3);
@@ -343,7 +397,6 @@ void AddMove(int from, int to, int flag, Piece promo) {
     }
 
     undomove();
-    if(good) add_bitboard(to);
 }
 
 void movegen(bool mv) {
@@ -354,21 +407,29 @@ void movegen(bool mv) {
     else kp = bkpos;
     // check for castling (holy this is gonna take LONG)
     // short castle
+    build_attack(!mv);
     int k = 0;
     if(!mv) k = 2;
     bool sc = castling&(1 << k); // didnt move
     if(sc) sc &= (Board[kp+1] == EMP and Board[kp+2] == EMP); // empty section
     if(sc) sc &= !bincheck(kp) and !bincheck(kp+1) and !bincheck(kp+2); // no checks
-    if(sc) AddMove(kp, kp+2, 2, EMP);
+    if(sc) {
+        // cout << "SC" << endl;
+        // printb();
+        AddMove(kp, kp+2, 2, EMP);
+    }
 
     // long castle
     k++;
     bool lc = castling&(1 << k);
     if(lc) lc &= (Board[kp-1] == EMP and Board[kp-2] == EMP and Board[kp-3] == EMP); // empty section
     if(lc) lc &= !bincheck(kp) and !bincheck(kp-1) and !bincheck(kp-2); // no checks
-    if(lc) AddMove(kp, kp-2, 3, EMP);
+    if(lc) {
+        // cout << "LC" << endl;
+        // printb();
+        AddMove(kp, kp-2, 3, EMP);
+    }
 
-    bitboard = 0;
     if(rb_p>0) Lm = lstmv[lstmv_p-1];
     else Lm = {0,0,EMP,EMP,0};
     for(int i = 0 ; i < 128 ; i++) {
