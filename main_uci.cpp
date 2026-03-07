@@ -92,6 +92,7 @@ int main() {
 			}
 
 			cout << "OMG " << ztable[zob_c] << endl;
+			printb();
 			mv ^= 1;
 			// cout << "OMG " << ztable[zob_c] << endl;
 		}

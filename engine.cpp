@@ -68,7 +68,7 @@ int PV[7][8][8] = { 0,  0,  0,  0,  0,  0,  0,  0,
 
 extern int wkpos, bkpos;
 int evaluate() {
-    const int Pvals[6] = {40, 100, 130, 400, 1000, 0};
+    const int Pvals[6] = {100, 280, 320, 479, 929, 0};
     int score_w = 0, score_b = 0;
     int mat_w = 0, mat_b = 0;
     for(int i = 0 ; i < 128 ; i++) {
@@ -154,11 +154,7 @@ int quiescence(bool turn, int alpha, int beta) {
 	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
 		int av = Pvals[a.capture%6];
 		int bv = Pvals[b.capture%6];
-		if(av != bv) return av < bv;
-		int ai = Board[a.from], bi = Board[b.from];
-		if(ai > 5) ai -= 6;
-		if(bi > 5) bi -= 6;
-		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) > (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+		return av < bv;
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
@@ -204,6 +200,8 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 		int ai = Board[a.from], bi = Board[b.from];
 		if(ai > 5) ai -= 6;
 		if(bi > 5) bi -= 6;
+		int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
+		if(aj != bj) return aj < bj;
 		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) > (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
 	});
 
