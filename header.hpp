@@ -49,7 +49,7 @@ struct CMove {
 
 int minimax(int depth, bool turn, int a = -INF, int b = INF);
 void movegen(bool turn);
-void domove(CMove Move, bool roll);
+void domove(CMove Move);
 void build_board();
 void undomove();
 void printb();

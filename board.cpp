@@ -4,6 +4,7 @@ BBT Board; // Global board
 
 // zobrist
 u64 zobrist[128][13];
+u64 zobrist_castle[16];
 u64 zob_c = 0;
 gp_hash_table<u64, u64> ztable;
 int wkpos, bkpos;
@@ -70,6 +71,8 @@ void build_board() {
     castling = 0xf;
     rb_p = 0;
     lstmv_p = 0;
+    zob_c = 0;
+    ztable.clear();
     for(int i = 0 ; i < 128 ; i++) {
         Board[i] = EMP;
     }
@@ -105,12 +108,14 @@ void build_board() {
         }
     }
 
+    for(int i = 0 ; i < 16 ; i++) zobrist_castle[i] = rng();
     for(int i = 0 ; i < 128 ; i++) {
         if(i&0x88) continue;
         // zob_c ^= zobrist[i][Board[i]];
         zob(i);
     }
 
+    zob_c ^= zobrist_castle[15];
     ztable[zob_c]++;
 }
 
@@ -223,7 +228,7 @@ void build_attack(bool mv) {
     }
 }
 
-void domove(CMove Move, bool roll) {
+void domove(CMove Move) {
     if(Move.from&0x88 or Move.to&0x88) {
         cout << Move.from << " " << Move.to << endl;
         cout << "BRO CMON" << endl;
@@ -231,17 +236,16 @@ void domove(CMove Move, bool roll) {
     }
 
     bool mvc = color(Move.from);
-    if(roll) {
-        rollback[rb_p] = Move;
-        rollback_c[rb_p] = castling;
-        rb_p++;
-    }
+    rollback[rb_p] = Move;
+    rollback_c[rb_p] = castling;
+    rb_p++;
 
     lstmv[lstmv_p] = Move;
     lstmv_p++;
     // castling
     // abcd
     // ab: L/S BLACK, cd: L/S WHITE
+    zob_c ^= zobrist_castle[castling];
     if(Board[Move.from] == WR) {
         if((Move.from&7) == 0) SETZ(castling, 2);
         if((Move.from&7) == 7) SETZ(castling, 1);
@@ -273,6 +277,7 @@ void domove(CMove Move, bool roll) {
         bkpos = Move.to;
     }
 
+    zob_c ^= zobrist_castle[castling];
     zob(Move.from);
     zob(Move.to);
     // zob_c ^= zobrist[Move.from][Board[Move.from]];
@@ -332,7 +337,9 @@ void undomove() {
     rb_p--;
     lstmv_p--;
     CMove rb = rollback[rb_p];
+    zob_c ^= zobrist_castle[castling];
     castling = rollback_c[rb_p];
+    zob_c ^= zobrist_castle[castling];
     ztable[zob_c]--;
 
     if(Board[rb.to] == WK) wkpos = rb.from;
@@ -390,7 +397,7 @@ void AddMove(int from, int to, int flag, Piece promo) {
     // Moves[mvs] = {from, to, Board[to], promo, 0};
     CMove m = {from, to, Board[to], promo, flag};
     bool good = 0;
-    domove(m, 1);
+    domove(m);
     if(!expincheck(color(to), 0)) {
         Moves[mvs++] = m;
         good = 1;

@@ -65,35 +65,42 @@ int main() {
 		}
 
 		else if(inp.substr(0, 23) == "position startpos moves") {
-			printb();
-			string u;
-			for(int i = inp.size()-1 ; i >= 0 ; i--) {
-				if(inp[i] == ' ') break;
-				u.push_back(inp[i]);
-			}
-
-			reverse(u.begin(), u.end());
-			build_attack(!mv);
-			movegen(mv);
-			bool fnd = 0;
-			for(int i = 0 ; i < mvs ; i++) {
-				string c = conv(Moves[i]);
-				cout << c << " " << u << endl;
-				if(c == u) {
-					fnd = 1;
-					domove(Moves[i], 0);
-					break;
+			build_board();
+			mv = 1;
+			string u = "";
+			vector<string> gg;
+			inp.push_back(' ');
+			for(int i = 23 ; i < inp.size() ; i++) {
+				if(inp[i] == ' ') {
+					if(u.size()) gg.push_back(u);
+					u = "";
 				}
+
+				else u.push_back(inp[i]);
 			}
 
-			if(!fnd) {
-				cout << (int)castling << " BROOO" << endl;
-				exit(0);
+			for(int i = 0 ; i < gg.size() ; i++) {
+				bool fnd = 0;
+				build_attack(!mv);
+				movegen(mv);
+				for(int j = 0 ; j < mvs ; j++) {
+					cout << conv(Moves[j]) << " " << gg[i] << endl;
+					if(conv(Moves[j]) == gg[i]) {
+						domove(Moves[j]);
+						fnd = 1;
+						mv ^= 1;
+						break;
+					}
+				}
+
+				if(!fnd) {
+					cout << (int)castling << " BROOO" << endl;
+					exit(0);
+				}
 			}
 
 			cout << "OMG " << ztable[zob_c] << endl;
 			printb();
-			mv ^= 1;
 			// cout << "OMG " << ztable[zob_c] << endl;
 		}
 
@@ -107,7 +114,7 @@ int main() {
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
 			cout << perft_mm << " " << chrono::duration<double>(t1 - t0).count() << endl;
-			domove(IND, 1);
+			domove(IND);
 			cout << castling << endl;
 			printb();
 			mv ^= 1;

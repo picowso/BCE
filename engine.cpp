@@ -5,7 +5,6 @@ extern CMove Moves[218];
 extern int mvs;
 extern gp_hash_table<u64, u64> ztable;
 gp_hash_table<u64, int> qsearch_v;
-map<pair<u64, u64>, u64> perft_t;
 
 extern u64 zob_c;
 // tables from https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -107,7 +106,7 @@ int perft(int depth, bool turn) {
 	int s = 0;
 	vector<CMove> local(Moves, Moves + mvs);
 	for(int i = 0 ; i < local.size() ; i++) {
-		domove(local[i], 1);
+		domove(local[i]);
 		// if(local[i].flag) printb();
 		int m = perft(depth + 1, turn ^ 1);
 		if(depth == 0) cout << conv(local[i]) << " " << m << endl;
@@ -159,7 +158,7 @@ int quiescence(bool turn, int alpha, int beta) {
 
 	for(int i = 0 ; i < local.size() ; i++) {
 		if(local[i].capture == EMP) continue;
-		domove(local[i], 1);
+		domove(local[i]);
 		int ls = quiescence(turn^1, alpha, beta);
 		undomove();
 		if(turn) {
@@ -206,7 +205,7 @@ int minimax(int depth, bool turn, int alpha, int beta) {
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
-		domove(local[i], 1);
+		domove(local[i]);
 		int ls = minimax(depth + 1, turn ^ 1, alpha, beta);
 		undomove();
 		if(turn) {
