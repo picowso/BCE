@@ -48,6 +48,10 @@ int main() {
 			return 0;
 		}
 
+		else if(inp == "stop") {
+			return 0;
+		}
+		
 		else if(inp == "uci") {
 			cout << "id name BriwatsCE\n";
 			cout << "id author Anass Zakar\n";
@@ -84,7 +88,7 @@ int main() {
 				build_attack(!mv);
 				movegen(mv);
 				for(int j = 0 ; j < mvs ; j++) {
-					cout << conv(Moves[j]) << " " << gg[i] << endl;
+					// cout << conv(Moves[j]) << " " << gg[i] << endl;
 					if(conv(Moves[j]) == gg[i]) {
 						domove(Moves[j]);
 						fnd = 1;
@@ -105,15 +109,53 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
-			perft_mm = 0;
-			IND = Moves[0];
-			auto t0 = chrono::high_resolution_clock::now();
-			minimax(0, mv);
-			auto t1 = chrono::high_resolution_clock::now();
-			movegen(mv);
+			int stab = 0;
+			double u = 0.;
+			string w = "";
+			vector<string> gg;
+			inp.push_back(' ');
+			for(int i = 2 ; i < inp.size() ; i++) {
+				if(inp[i] == ' ') {
+					if(w.size()) gg.push_back(w);
+					w = "";
+				}
+
+				else w.push_back(inp[i]);
+			}
+
+			map<string, string> uwu;
+			for(int i = 0 ; i < gg.size() ; i += 2) {
+				uwu[gg[i]] = gg[i+1];
+			}
+
+			int ttw = stoi(uwu["wtime"]);
+			int ttb = stoi(uwu["btime"]);
+			// cout << tw << " " << tb << endl;
+			if(mv) swap(ttb, ttw);
+			double tw = ttw / 1000.;
+			double tb = ttb / 1000.;
+
+			// Iterative deepening:
+			for(int i = 0 ; i < DEPTH_MAX ; i++) {
+				perft_mm = 0;
+				IND = {0,0,EMP,EMP,0};
+				CMove LIND = IND;
+				auto t0 = chrono::high_resolution_clock::now();
+				minimax(i, i, mv);
+				auto t1 = chrono::high_resolution_clock::now();
+				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
+				u += chrono::duration<double>(t1 - t0).count();
+				cout << u << endl;
+				if(10*u > min({10., stab + (double)tb / 31., tb})) {
+					cout << i << endl;
+					break;
+				}
+			}
+
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
-			cout << perft_mm << " " << chrono::duration<double>(t1 - t0).count() << endl;
+			cout << mvs << endl;
+			// cout << perft_mm << " " << chrono::duration<double>(t1 - t0).count() << endl;
 			domove(IND);
 			cout << castling << endl;
 			printb();

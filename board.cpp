@@ -4,7 +4,7 @@ BBT Board; // Global board
 
 // zobrist
 u64 zobrist[128][13];
-u64 zobrist_castle[16];
+// u64 zobrist_castle[16];
 u64 zob_c = 0;
 gp_hash_table<u64, u64> ztable;
 int wkpos, bkpos;
@@ -108,14 +108,14 @@ void build_board() {
         }
     }
 
-    for(int i = 0 ; i < 16 ; i++) zobrist_castle[i] = rng();
+    // for(int i = 0 ; i < 16 ; i++) zobrist_castle[i] = rng();
     for(int i = 0 ; i < 128 ; i++) {
         if(i&0x88) continue;
         // zob_c ^= zobrist[i][Board[i]];
         zob(i);
     }
 
-    zob_c ^= zobrist_castle[15];
+    // zob_c ^= zobrist_castle[15];
     ztable[zob_c]++;
 }
 
@@ -245,7 +245,7 @@ void domove(CMove Move) {
     // castling
     // abcd
     // ab: L/S BLACK, cd: L/S WHITE
-    zob_c ^= zobrist_castle[castling];
+    // zob_c ^= zobrist_castle[castling];
     if(Board[Move.from] == WR) {
         if((Move.from&7) == 0) SETZ(castling, 2);
         if((Move.from&7) == 7) SETZ(castling, 1);
@@ -277,7 +277,7 @@ void domove(CMove Move) {
         bkpos = Move.to;
     }
 
-    zob_c ^= zobrist_castle[castling];
+    // zob_c ^= 4[castling];
     zob(Move.from);
     zob(Move.to);
     // zob_c ^= zobrist[Move.from][Board[Move.from]];
@@ -337,9 +337,9 @@ void undomove() {
     rb_p--;
     lstmv_p--;
     CMove rb = rollback[rb_p];
-    zob_c ^= zobrist_castle[castling];
+    // zob_c ^= zobrist_castle[castling];
     castling = rollback_c[rb_p];
-    zob_c ^= zobrist_castle[castling];
+    // zob_c ^= zobrist_castle[castling];
     ztable[zob_c]--;
 
     if(Board[rb.to] == WK) wkpos = rb.from;
