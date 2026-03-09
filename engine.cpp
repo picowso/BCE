@@ -58,6 +58,18 @@ int PV[6][8][8] = {0,   0,   0,   0,   0,   0,   0,   0,
             -4,   3, -14, -50, -57, -18,  13,   4,
             17,  30,  -3, -14,   6,  -1,  40,  18};
 
+// enum NType {
+// 	PV = 0,
+// 	CUT = 1,
+// 	ALL = 2
+// };
+
+struct TB {
+	int depth;
+	int sc;
+	NType type;
+};
+
 extern int wkpos, bkpos;
 const int Pvals[13] = {100, 280, 320, 479, 929, 0, 100, 280, 320, 479, 929, 0, 0};
 int evaluate() {
@@ -113,6 +125,19 @@ int perft(int depth, bool turn) {
 int perft_mm = 0;
 int tot = 0;
 extern CMove IND;
+int mtdf(bool turn, int f, int depth) {
+	int l = -INF;
+	int r = INF;
+	while(l < r) {
+		int beta = f + (f == l);
+		f = minimax(depth, depth, beta-1, beta);
+		if(f < beta) l = f;
+		else r = f;
+	};
+
+	return f;
+}
+
 int quiescence(int depth, bool turn, int alpha, int beta) {
 	perft_mm++;
 	tot++;

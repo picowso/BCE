@@ -59,3 +59,4 @@ string conv(CMove cmove);
 bool color(int i);
 bool bincheck(int i);
 void build_attack(bool u);
+void build_fromfen(string str);

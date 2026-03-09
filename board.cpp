@@ -49,13 +49,24 @@ void printb() {
     //     u8"\u265F", u8"\u265E", u8"\u265D", u8"\u265C", u8"\u265B", u8"\u265A",
     // };
 
+    // bool u = 0;
+    // for(int i = 0 ; i < 8 ; i++) {
+    //     for(int j = 0 ; j < 8 ; j++) {
+    //         int k = 16*i + j;
+    //         if(Board[k] == EMP) cout << "#";
+    //         // else cout << reinterpret_cast<const char*>(tns[Board[k]]);
+    //         else cout << tns[Board[k]];
+    //     }
+
+    //     cout << endl;
+    // }
+
     bool u = 0;
     for(int i = 0 ; i < 8 ; i++) {
-        for(int j = 0 ; j < 8 ; j++) {
-            int k = 16*i + j;
-            if(Board[k] == EMP) cout << "#";
+        for(int j = 0 ; j < 16 ; j++) {
+            if(Board[16*i + j] == EMP) cout << "#";
             // else cout << reinterpret_cast<const char*>(tns[Board[k]]);
-            else cout << tns[Board[k]];
+            else cout << tns[Board[16*i + j]];
         }
 
         cout << endl;
@@ -120,7 +131,12 @@ void build_board() {
 }
 
 void build_fromfen(string str) {
-    build_board();
+    mvs = 0;
+    castling = 0xf;
+    rb_p = 0;
+    lstmv_p = 0;
+    zob_c = 0;
+    ztable.clear();
     for(int i = 0 ; i < 128 ; i++) {
         Board[i] = EMP;
     }
@@ -131,9 +147,15 @@ void build_fromfen(string str) {
         if(str[i] == '/') {
             u = c << 4;
             c++;
+            continue;
         }
 
-        if(isdigit(str[i])) u += str[i] - '0';
+        if('0' <= str[i] and str[i] <= '9') {
+            u += str[i] - '0';
+            continue;
+        }
+
+        cout << u << endl;
         if(str[i] == 'p') Board[u] = BP;
         else if(str[i] == 'n') Board[u] = BN;
         else if(str[i] == 'b') Board[u] = BB;
@@ -161,10 +183,7 @@ void build_fromfen(string str) {
 
     castling = 0;
     if(i < str.size()) {
-        if(str[i] == '-') {
-            while(i < str.size() and str[i] != ' ') i++;
-        }
-
+        if(str[i] == '-') while(i < str.size() and str[i] != ' ') i++;
         else {
             for(; i < str.size() and str[i] != ' '; i++) {
                 if(str[i] == 'K') castling |= 1;
@@ -175,9 +194,64 @@ void build_fromfen(string str) {
         }
     }
 
-    while(i < (int)str.size() && str[i] == ' ') i++;
-    // finish last thing, en-passant, ima sleep now
+    while(i < str.size() and str[i] == ' ') i++;
+    // finish en-passant, ima sleep now
     lstmv_p = 0;
+    if(i < str.size()) {
+        if(str[i] != '-') {
+            // two chars
+            if(i + 1 < str.size()) {
+                int f = str[i] - 'a';
+                int fr = str[i+1] - '0';
+                int r = 8 - fr;
+                int ep = (r << 4) | f;
+
+                extern bool mv;
+                CMove Lm = {0,0,EMP,EMP,0};
+                if(mv) {
+                    int from = ep - 2 * pdir[0];
+                    if(!(from & 0x88) and !(ep & 0x88)) {
+                        Lm.from = (u8)from;
+                        Lm.to   = (u8)ep;
+                        Lm.capture = Board[ep];
+                        Lm.promo = EMP;
+                        Lm.flag = 0;
+                        lstmv[0] = Lm;
+                        lstmv_p = 1;
+                    }
+                }
+
+                else {
+                    int from = ep - 2 * pdir[1];
+                    if(!(from & 0x88) and !(ep & 0x88)) {
+                        Lm.from = (u8)from;
+                        Lm.to   = (u8)ep;
+                        Lm.capture = Board[ep];
+                        Lm.promo = EMP;
+                        Lm.flag = 0;
+                        lstmv[0] = Lm;
+                        lstmv_p = 1;
+                    }
+                }
+            }
+
+            while(i < str.size() and str[i] != ' ') i++;
+        }
+
+        else while(i < str.size() and str[i] != ' ') i++;
+    }
+
+    // update zobrist and wkpos bkpos
+    zob_c = 0;
+    wkpos = bkpos = -1;
+    for(int i = 0 ; i < 128 ; i++) {
+        if(i&0x88) continue;
+        if(Board[i] == BK) bkpos = i;
+        if(Board[i] == WK) wkpos = i;
+        zob(i);
+    }
+
+    ztable[zob_c]++;
 }
 
 bool expincheck(bool kc, bool u) {

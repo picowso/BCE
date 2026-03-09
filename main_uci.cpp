@@ -33,6 +33,7 @@ CMove IND = {0,0,EMP,EMP,0};
 // extern int perft;
 int main() {
 	build_board();
+	build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
 	printb();
 	movegen(!mv);
 	// auto t0 = chrono::high_resolution_clock::now();

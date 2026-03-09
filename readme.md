@@ -4,6 +4,16 @@ a pseudo-functional and kinda unefficient chess engine
 
 ---
 
-### what should be done:
+### what should be done before shipping:
 
-- [ ] get rid of color[i] and do it inside of Piece instead!
+- [X] Move generation
+- [X] Basic evaluation function
+- [X] Minimax and Quiescence search
+- [X] UCI integration
+- [X] Time management + Iterative deepening
+- [X] A FEN reader
+- [ ] Transposition table
+- [ ] Null window
+- [ ] [MTD(f)](https://people.csail.mit.edu/plaat/mtdf.html) implementation
+- [ ] Implement and train a MLP on [Lichess elite database](https://database.nikonoel.fr/) 
+- [ ] Implement NNUE
