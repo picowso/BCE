@@ -4,7 +4,14 @@ BBT Board; // Global board
 
 // zobrist
 u64 zobrist[128][13];
-// u64 zobrist_castle[16];
+const u64 zobrist_castling[16] = {17655471254146881536ULL, 18279671532425267200ULL, 2541236375155531264ULL,
+                                978525948882968960ULL, 10420957505803663360ULL, 4062041258912541184ULL,
+                                589856494314211456ULL, 10771295606568798208ULL, 5664616889478702080ULL,
+                                5740304894085401600ULL, 8657072065486682112ULL, 9803964329434722304ULL,
+                                8085386955865525248ULL, 15149151432984141824ULL, 7475191094976130048ULL, 2920194565133871104ULL};
+
+const u64 zobrist_turn[2] = {9705194964410038272ULL, 7466648264651373568ULL};
+const u64 zobrist_enp[2] = {16767315239608971264ULL, 12834755730513758208ULL};
 u64 zob_c = 0;
 gp_hash_table<u64, u64> ztable;
 int wkpos, bkpos;
@@ -75,6 +82,14 @@ void printb() {
 
 void zob(int i) {
     zob_c ^= zobrist[i][Board[i]];
+}
+
+// three rep into trans table
+u64 upd(bool turn) {
+    int flag;
+    if(rb_p>0) flag = (lstmv[lstmv_p-1].flag == 1);
+    else flag = 0;
+    return zob_c ^ zobrist_castling[castling] ^ zobrist_turn[turn] ^ zobrist_enp[flag];
 }
 
 void build_board() {

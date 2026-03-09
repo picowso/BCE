@@ -33,7 +33,7 @@ CMove IND = {0,0,EMP,EMP,0};
 // extern int perft;
 int main() {
 	build_board();
-	build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
+	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
 	printb();
 	movegen(!mv);
 	// auto t0 = chrono::high_resolution_clock::now();
@@ -138,18 +138,19 @@ int main() {
 			double tw = ttw / 1000.;
 			double tb = ttb / 1000.;
 
-			// Iterative deepening:
+			// Iterative deepening + MTD(f)
+			int firstguess = 10;
 			for(int i = 0 ; i < DEPTH_MAX ; i++) {
 				perft_mm = 0;
 				IND = {0,0,EMP,EMP,0};
 				CMove LIND = IND;
 				auto t0 = chrono::high_resolution_clock::now();
-				minimax(i, i, mv);
+				firstguess = mtdf(mv, firstguess, i);
 				auto t1 = chrono::high_resolution_clock::now();
 				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
 				u += chrono::duration<double>(t1 - t0).count();
 				cout << u << endl;
-				if(10*u > min({10., stab + (double)tb / 31., tb})) {
+				if(17*u > min({10., stab + (double)tb / 27., tb})) {
 					cout << i << endl;
 					break;
 				}

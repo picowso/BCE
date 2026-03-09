@@ -58,17 +58,61 @@ int PV[6][8][8] = {0,   0,   0,   0,   0,   0,   0,   0,
             -4,   3, -14, -50, -57, -18,  13,   4,
             17,  30,  -3, -14,   6,  -1,  40,  18};
 
-// enum NType {
-// 	PV = 0,
-// 	CUT = 1,
-// 	ALL = 2
-// };
+// transposition table
+enum NType {
+	EXACT = 0,
+	LOWER = 1,
+	UPPER = 2
+};
 
 struct TB {
 	int depth;
-	int sc;
-	NType type;
+	int val;
+	CMove BMove;
+	NType flag;
 };
+
+gp_hash_table<u64, TB> ttable;
+// retrieving ttable info
+bool retrieve_tb(u64 key, int depth, int alpha, int beta, int &act_s, CMove &act_m) {
+    auto it = ttable.find(key);
+    if(it == ttable.end()) return 0;
+    const TB &e = it->second;
+    act_m = e.BMove;
+
+    // flight
+    if(e.depth < depth) return 0;
+    int val = e.val;
+    if(e.flag == EXACT) {
+    	act_s = val;
+    	return 1;
+    }
+
+    if(e.flag == LOWER) {
+    	if (val >= beta) {
+    		act_s = val;
+    		return 1;
+    	}
+	}
+
+    if(e.flag == UPPER) {
+    	if(val <= alpha) {
+    		act_s = val;
+    		return 1;
+    	}
+    }
+
+    return 0;
+}
+
+void set_tb(u64 key, int score, int depth, NType flag, CMove Bm) {
+    TB e;
+    e.val = score;
+    e.depth = depth;
+    e.flag  = flag;
+    e.BMove = Bm;
+    ttable[key] = e;
+}
 
 extern int wkpos, bkpos;
 const int Pvals[13] = {100, 280, 320, 479, 929, 0, 100, 280, 320, 479, 929, 0, 0};
@@ -125,19 +169,6 @@ int perft(int depth, bool turn) {
 int perft_mm = 0;
 int tot = 0;
 extern CMove IND;
-int mtdf(bool turn, int f, int depth) {
-	int l = -INF;
-	int r = INF;
-	while(l < r) {
-		int beta = f + (f == l);
-		f = minimax(depth, depth, beta-1, beta);
-		if(f < beta) l = f;
-		else r = f;
-	};
-
-	return f;
-}
-
 int quiescence(int depth, bool turn, int alpha, int beta) {
 	perft_mm++;
 	tot++;
@@ -202,10 +233,13 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
 	// if(ztable[zob_c] >= 3) return 0;
 	auto it = ztable.find(zob_c);
-	if (it != ztable.end() && it->second >= 3) return 0;
+	if(it != ztable.end() && it->second >= 3) return 0;
+	int bs = (turn ? -INF - 50 : INF + 50);
+	CMove Bm = {0,0,EMP,EMP,0};
+	int uzob_c = upd(turn);
+	if(retrieve_tb(uzob_c, depth, alpha, beta, bs, Bm)) return bs;
 	// if(s_table.find({zob_c, depth}) != s_table.end()) return s_table[{zob_c, depth}];
 	// perft_mm++;
-	int bs = (turn ? -INF - 50 : INF + 50);
 	// bool check = incheck(turn);
 	build_attack(!turn);
 	movegen(turn);
@@ -215,6 +249,8 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 		else return 0;
 	}
 
+	int oalpha = alpha;
+	int obeta = beta;
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
 	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
@@ -236,7 +272,7 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 		undomove();
 		if(turn) {
 			if(ls > bs) {
-				if(depth == depth_n) IND = local[i];
+				Bm = local[i];
 				bs = ls;
 			}
 
@@ -246,7 +282,7 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 
 		else {
 			if(ls < bs) {
-				if(depth == depth_n) IND = local[i];
+				Bm = local[i];
 				bs = ls;
 			}
 
@@ -255,6 +291,25 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 		}
 	}
 
+	if(depth == depth_n) IND = Bm;
 	// return s_table[{zob_c, depth}] = bs;
+	NType flag;
+	if(bs <= oalpha) flag = UPPER;
+	else if(bs >= obeta) flag = LOWER;
+	else flag = EXACT;
+	set_tb(uzob_c, bs, depth, flag, Bm);
 	return bs;
+}
+
+int mtdf(bool turn, int f, int depth) {
+	int l = -INF;
+	int r = INF;
+	while(l < r) {
+		int beta = f + (f == l);
+		f = minimax(depth, depth, turn, beta-1, beta);
+		if(f < beta) r = f;
+		else l = f;
+	};
+
+	return f;
 }
