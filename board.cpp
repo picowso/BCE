@@ -119,9 +119,65 @@ void build_board() {
     ztable[zob_c]++;
 }
 
-// TODO
 void build_fromfen(string str) {
+    build_board();
+    for(int i = 0 ; i < 128 ; i++) {
+        Board[i] = EMP;
+    }
 
+    int u = 0, i = 0, c = 1;
+    for(; i < str.size() ; i++) {
+        if(str[i] == ' ') break;
+        if(str[i] == '/') {
+            u = c << 4;
+            c++;
+        }
+
+        if(isdigit(str[i])) u += str[i] - '0';
+        if(str[i] == 'p') Board[u] = BP;
+        else if(str[i] == 'n') Board[u] = BN;
+        else if(str[i] == 'b') Board[u] = BB;
+        else if(str[i] == 'r') Board[u] = BR;
+        else if(str[i] == 'q') Board[u] = BQ;
+        else if(str[i] == 'k') Board[u] = BK;
+        else if(str[i] == 'P') Board[u] = WP;
+        else if(str[i] == 'N') Board[u] = WN;
+        else if(str[i] == 'B') Board[u] = WB;
+        else if(str[i] == 'R') Board[u] = WR;
+        else if(str[i] == 'Q') Board[u] = WQ;
+        else if(str[i] == 'K') Board[u] = WK;
+        u++;
+    }
+
+    while(i < str.size() and str[i] == ' ') i++;
+    if(i < str.size()) {
+        extern bool mv;
+        if(str[i] == 'w') mv = 1;
+        else mv = 0;
+    }
+
+    while(i < str.size() and str[i] != ' ') i++;
+    while(i < str.size() and str[i] == ' ') i++;
+
+    castling = 0;
+    if(i < str.size()) {
+        if(str[i] == '-') {
+            while(i < str.size() and str[i] != ' ') i++;
+        }
+
+        else {
+            for(; i < str.size() and str[i] != ' '; i++) {
+                if(str[i] == 'K') castling |= 1;
+                else if(str[i] == 'Q') castling |= 2;
+                else if(str[i] == 'k') castling |= 4;
+                else if(str[i] == 'q') castling |= 8;
+            }
+        }
+    }
+
+    while(i < (int)str.size() && str[i] == ' ') i++;
+    // finish last thing, en-passant, ima sleep now
+    lstmv_p = 0;
 }
 
 bool expincheck(bool kc, bool u) {

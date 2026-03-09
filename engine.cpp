@@ -180,7 +180,7 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	if (it != ztable.end() && it->second >= 3) return 0;
 	// if(s_table.find({zob_c, depth}) != s_table.end()) return s_table[{zob_c, depth}];
 	// perft_mm++;
-	int bs = (turn ? -INF : INF);
+	int bs = (turn ? -INF - 50 : INF + 50);
 	// bool check = incheck(turn);
 	build_attack(!turn);
 	movegen(turn);

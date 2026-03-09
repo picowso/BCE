@@ -51,7 +51,7 @@ int main() {
 		else if(inp == "stop") {
 			return 0;
 		}
-		
+
 		else if(inp == "uci") {
 			cout << "id name BriwatsCE\n";
 			cout << "id author Anass Zakar\n";
@@ -128,8 +128,10 @@ int main() {
 				uwu[gg[i]] = gg[i+1];
 			}
 
-			int ttw = stoi(uwu["wtime"]);
-			int ttb = stoi(uwu["btime"]);
+			int ttw = 5000;
+			if(uwu.contains("wtime")) ttw = stoi(uwu["wtime"]);
+			int ttb = 5000;
+			if(uwu.contains("btime")) ttb = stoi(uwu["btime"]);
 			// cout << tw << " " << tb << endl;
 			if(mv) swap(ttb, ttw);
 			double tw = ttw / 1000.;
