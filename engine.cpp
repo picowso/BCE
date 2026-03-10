@@ -74,7 +74,7 @@ struct TB {
 
 gp_hash_table<u64, TB> ttable;
 // retrieving ttable info
-bool retrieve_tb(u64 key, int depth, int alpha, int beta, int &act_s, CMove &act_m) {
+bool retrieve_tb(u64 key, int depth, int &alpha, int &beta, int &act_s, CMove &act_m) {
     auto it = ttable.find(key);
     if(it == ttable.end()) return 0;
     const TB &e = it->second;
@@ -89,10 +89,12 @@ bool retrieve_tb(u64 key, int depth, int alpha, int beta, int &act_s, CMove &act
     }
 
     if(e.flag == LOWER) {
-    	if (val >= beta) {
+    	if(val >= beta) {
     		act_s = val;
     		return 1;
     	}
+
+    	if(val > alpha) alpha = val;
 	}
 
     if(e.flag == UPPER) {
@@ -100,18 +102,38 @@ bool retrieve_tb(u64 key, int depth, int alpha, int beta, int &act_s, CMove &act
     		act_s = val;
     		return 1;
     	}
+
+    	if(val < beta) beta = val;
+    }
+
+    if(alpha >= beta) {
+    	act_s = val;
+    	return 1;
     }
 
     return 0;
 }
 
 void set_tb(u64 key, int score, int depth, NType flag, CMove Bm) {
+	auto it = ttable.find(key);
+	if(it == ttable.end()) {
+		TB e;
+	    e.val = score;
+	    e.depth = depth;
+	    e.flag  = flag;
+	    e.BMove = Bm;
+	    ttable[key] = e;
+	    return;
+	}
+
+    const TB &ew = it->second;
+    if(ew.depth > depth) return;
     TB e;
-    e.val = score;
-    e.depth = depth;
-    e.flag  = flag;
-    e.BMove = Bm;
-    ttable[key] = e;
+	e.val = score;
+	e.depth = depth;
+	e.flag  = flag;
+	e.BMove = Bm;
+	ttable[key] = e;
 }
 
 extern int wkpos, bkpos;
@@ -179,7 +201,7 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	// }
 
 	// if(ztable[zob_c] >= 3) return 0;
-	auto it = ztable.find(zob_c);
+	auto it = ztable.find(upd(zob_c));
 	if (it != ztable.end() && it->second >= 3) return 0;
 	int bs = evaluate();
 	if(turn) {
@@ -201,10 +223,10 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	}
 
 	vector<CMove> local(Moves, Moves + mvs);
-	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
+	sort(local.begin(), local.end(), [&](CMove a, CMove b) {
 		int av = Pvals[a.capture];
 		int bv = Pvals[b.capture];
-		return av < bv;
+		return av > bv;
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
@@ -232,7 +254,7 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	if(depth == 0) return quiescence(depth, turn, alpha, beta);
 	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
 	// if(ztable[zob_c] >= 3) return 0;
-	auto it = ztable.find(zob_c);
+	auto it = ztable.find(upd(zob_c));
 	if(it != ztable.end() && it->second >= 3) return 0;
 	int bs = (turn ? -INF - 50 : INF + 50);
 	CMove Bm = {0,0,EMP,EMP,0};
@@ -253,17 +275,19 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	int obeta = beta;
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
-	sort(local.rbegin(), local.rend(), [&](CMove a, CMove b) {
+	sort(local.begin(), local.end(), [&](CMove a, CMove b) -> bool{
+		if(a.from == Bm.from and a.to == Bm.to) return 1;
+		if(b.from == Bm.from and b.to == Bm.to) return 0;
 		int av = Pvals[a.capture];
 		int bv = Pvals[b.capture];
-		if(av != bv) return av < bv;
+		if(av != bv) return av > bv;
 
 		int ai = Board[a.from], bi = Board[b.from];
-		int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
-		if(aj != bj) return aj < bj;
 		if(ai>5)ai-=6;
 		if(bi>5)bi-=6;
-		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) > (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+		int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
+		if(aj != bj) return aj < bj;
+		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) < (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
@@ -301,6 +325,7 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	return bs;
 }
 
+// f: first guess
 int mtdf(bool turn, int f, int depth) {
 	int l = -INF;
 	int r = INF;

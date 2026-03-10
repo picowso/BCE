@@ -32,6 +32,7 @@ extern u8 castling;
 CMove IND = {0,0,EMP,EMP,0};
 // extern int perft;
 int main() {
+	build_zob();
 	build_board();
 	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
 	printb();
@@ -140,17 +141,18 @@ int main() {
 
 			// Iterative deepening + MTD(f)
 			int firstguess = 10;
-			for(int i = 0 ; i < DEPTH_MAX ; i++) {
+			for(int i = 1 ; i < DEPTH_MAX ; i++) {
 				perft_mm = 0;
 				IND = {0,0,EMP,EMP,0};
 				CMove LIND = IND;
 				auto t0 = chrono::high_resolution_clock::now();
-				firstguess = mtdf(mv, firstguess, i);
+				// firstguess = mtdf(mv, firstguess, i);
+				firstguess = minimax(i, i, mv);
 				auto t1 = chrono::high_resolution_clock::now();
 				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
 				u += chrono::duration<double>(t1 - t0).count();
 				cout << u << endl;
-				if(17*u > min({10., stab + (double)tb / 27., tb})) {
+				if(17*u > min({4.5, stab + tb/2, tb})) {
 					cout << i << endl;
 					break;
 				}

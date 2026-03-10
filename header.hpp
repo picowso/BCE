@@ -62,3 +62,4 @@ void build_attack(bool u);
 void build_fromfen(string str);
 u64 upd(bool turn);
 int mtdf(bool turn, int f, int depth);
+void build_zob();

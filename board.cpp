@@ -11,7 +11,7 @@ const u64 zobrist_castling[16] = {17655471254146881536ULL, 18279671532425267200U
                                 8085386955865525248ULL, 15149151432984141824ULL, 7475191094976130048ULL, 2920194565133871104ULL};
 
 const u64 zobrist_turn[2] = {9705194964410038272ULL, 7466648264651373568ULL};
-const u64 zobrist_enp[2] = {16767315239608971264ULL, 12834755730513758208ULL};
+u64 zobrist_enp[128];
 u64 zob_c = 0;
 gp_hash_table<u64, u64> ztable;
 int wkpos, bkpos;
@@ -87,9 +87,18 @@ void zob(int i) {
 // three rep into trans table
 u64 upd(bool turn) {
     int flag;
-    if(rb_p>0) flag = (lstmv[lstmv_p-1].flag == 1);
+    if(rb_p>0) flag = lstmv[rb_p-1].to;
     else flag = 0;
     return zob_c ^ zobrist_castling[castling] ^ zobrist_turn[turn] ^ zobrist_enp[flag];
+}
+
+void build_zob() {
+    zob_c = 0;
+    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    for(int i = 0 ; i < 128 ; i++) {
+        zobrist_enp[i] = rng();
+        for(int j = 0 ; j < 13 ; j++) zobrist[i][j] = rng();
+    }
 }
 
 void build_board() {
@@ -125,19 +134,10 @@ void build_board() {
 
     wkpos = 116;
     bkpos = 4;
-    // zobrist
-    zob_c = 0;
-    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-    for(int i = 0 ; i < 128 ; i++) {
-        for(int j = 0 ; j < 13 ; j++) {
-            zobrist[i][j] = rng();
-        }
-    }
 
-    // for(int i = 0 ; i < 16 ; i++) zobrist_castle[i] = rng();
+    // zobrist
     for(int i = 0 ; i < 128 ; i++) {
         if(i&0x88) continue;
-        // zob_c ^= zobrist[i][Board[i]];
         zob(i);
     }
 
