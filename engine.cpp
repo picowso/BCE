@@ -1,7 +1,7 @@
 // engine.cpp: where the engine lives
 #include "header.hpp"
 extern BBT Board;
-extern CMove Moves[218];
+extern CMove Moves[6001];
 extern int mvs;
 extern gp_hash_table<u64, u64> ztable;
 gp_hash_table<u64, int> qsearch_v;
@@ -276,8 +276,12 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
 	sort(local.begin(), local.end(), [&](CMove a, CMove b) -> bool{
-		if(a.from == Bm.from and a.to == Bm.to) return 1;
-		if(b.from == Bm.from and b.to == Bm.to) return 0;
+		// if(a.from == Bm.from and a.to == Bm.to) return 1;
+		// if(b.from == Bm.from and b.to == Bm.to) return 0;
+		bool qa = a.from == Bm.from and a.to == Bm.to;
+		bool qb = b.from == Bm.from and b.to == Bm.to;
+		if(qa!=qb) return qa;
+		if(qa==qb) return 0;
 		int av = Pvals[a.capture];
 		int bv = Pvals[b.capture];
 		if(av != bv) return av > bv;

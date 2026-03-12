@@ -29,7 +29,7 @@ int ray[6][8] = {
     { 1, -1, 16, -16, 17, 15, -15, -17}  // king
 };
 
-CMove Moves[218]; // https://lichess.org/@/Tobs40/blog/why-a-reachable-position-can-have-at-most-218-playable-moves/a5xdxeqs
+CMove Moves[6001];
 int mvs = 0;
 int rays_s[6] = {0, 8, 4, 4, 8, 8}; // size, slight optimization
 

@@ -1,7 +1,7 @@
 // main_uci.cpp: UCI interface for the engine
 #include "header.hpp"
 extern BBT Board;
-extern CMove Moves[218];
+extern CMove Moves[6001];
 extern int mvs;
 extern gp_hash_table<u64, u64> ztable;
 extern u64 zob_c;
@@ -34,6 +34,7 @@ CMove IND = {0,0,EMP,EMP,0};
 int main() {
 	build_zob();
 	build_board();
+	// init_tables();
 	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
 	printb();
 	movegen(!mv);
