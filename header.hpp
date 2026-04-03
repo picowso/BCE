@@ -13,6 +13,8 @@
 #include <chrono>
 #include <cstring>
 #define SETZ(p, i) p = p & ~i;
+#define TT_SIZE 33554432
+#define TT_HASH 33554431
 using namespace __gnu_pbds;
 using namespace std;
 const int ITER_LIMIT = 3'000'000;
@@ -47,7 +49,7 @@ struct CMove {
     u8 flag; // 1 = en passant, 2 = s castle, 3 = l castle
 };
 
-int minimax(int dn, int depth, bool turn, int a = -INF, int b = INF);
+int minimax(int dn, int depth, bool turn, int a = -INF, int b = INF, int ply = 0);
 void movegen(bool turn);
 void domove(CMove Move);
 void build_board();
@@ -61,6 +63,6 @@ bool bincheck(int i);
 void build_attack(bool u);
 void build_fromfen(string str);
 u64 upd(bool turn);
-int mtdf(bool turn, int f, int depth);
+int mtdf(bool turn, int f, int depth, int ply);
 void build_zob();
 // void init_tables();

@@ -191,6 +191,32 @@ int perft(int depth, bool turn) {
 int perft_mm = 0;
 int tot = 0;
 extern CMove IND;
+
+
+
+bool eqmov(CMove &a, CMove &b) {
+	return a.from == b.from and a.to == b.to and a.flag == b.flag and a.capture == b.capture and a.promo == b.promo;
+}
+
+// killer & history
+CMove killer[2][128];
+int history[13][128];
+// https://www.chessprogramming.org/Killer_Heuristic
+// https://www.chessprogramming.org/History_Heuristic
+// https://www.youtube.com/watch?v=MA6d1hZ1YBE
+int move_score(CMove m, CMove t, int ply) {
+	if(eqmov(m, t)) return INF;
+	if(m.capture != EMP) {
+		return 450'000 + 10*Pvals[m.capture] - Pvals[Board[m.from]];
+	}
+
+	int s = 0;
+	if(eqmov(m, killer[0][ply])) s += 350'000;
+	else if(eqmov(m, killer[1][ply])) s += 300'000;
+	s += history[Board[m.from]][m.to];
+	return s;
+}
+
 int quiescence(int depth, bool turn, int alpha, int beta) {
 	perft_mm++;
 	tot++;
@@ -250,10 +276,10 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	return bs;
 }
 
-int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
+int minimax(int depth_n, int depth, bool turn, int alpha, int beta, int ply) {
 	if(depth == 0) return quiescence(depth, turn, alpha, beta);
 	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
-	// if(ztable[zob_c] >= 3) return 0;
+	if(ztable[zob_c] >= 3) return 0;
 	auto it = ztable.find(upd(zob_c));
 	if(it != ztable.end() && it->second >= 3) return 0;
 	int bs = (turn ? -INF - 50 : INF + 50);
@@ -275,29 +301,31 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 	int obeta = beta;
 	vector<CMove> local(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
-	sort(local.begin(), local.end(), [&](CMove a, CMove b) -> bool{
+	sort(local.begin(), local.end(), [&](const CMove& a, const CMove& b) -> bool{
 		// if(a.from == Bm.from and a.to == Bm.to) return 1;
 		// if(b.from == Bm.from and b.to == Bm.to) return 0;
-		bool qa = a.from == Bm.from and a.to == Bm.to;
-		bool qb = b.from == Bm.from and b.to == Bm.to;
-		if(qa!=qb) return qa;
-		if(qa==qb) return 0;
-		int av = Pvals[a.capture];
-		int bv = Pvals[b.capture];
-		if(av != bv) return av > bv;
+		// bool qa = a.from == Bm.from and a.to == Bm.to;
+		// bool qb = b.from == Bm.from and b.to == Bm.to;
+		// if(qa!=qb) return qa;
+		// if(qa==qb) return 0;
+		// int av = Pvals[a.capture];
+		// int bv = Pvals[b.capture];
+		// if(av != bv) return av > bv;
 
-		int ai = Board[a.from], bi = Board[b.from];
-		if(ai>5)ai-=6;
-		if(bi>5)bi-=6;
-		int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
-		if(aj != bj) return aj < bj;
-		return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) < (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+		// int ai = Board[a.from], bi = Board[b.from];
+		// if(ai>5)ai-=6;
+		// if(bi>5)bi-=6;
+		// int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
+		// if(aj != bj) return aj < bj;
+		// return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) < (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+		return move_score(a, Bm, ply) > move_score(b, Bm, ply);
 	});
 
 	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i]);
-		int ls = minimax(depth_n, depth - 1, turn ^ 1, alpha, beta);
+		int ls = minimax(depth_n, depth - 1, turn ^ 1, alpha, beta, ply+1);
 		undomove();
+
 		if(turn) {
 			if(ls > bs) {
 				Bm = local[i];
@@ -305,7 +333,20 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 			}
 
 			alpha = max(alpha, bs);
-			if(beta <= alpha) break;
+			if(beta <= alpha) {
+				if(local[i].capture == EMP) {
+					if(!eqmov(local[i], killer[0][ply])) {
+						killer[1][ply] = killer[0][ply];
+						killer[0][ply] = local[i];
+					}
+
+					history[Board[local[i].from]][local[i].to] += depth*depth;
+					// overflow protection
+					if(history[Board[local[i].from]][local[i].to] > 1'000'000) history[Board[local[i].from]][local[i].to] >>= 1;
+				}
+
+				break;
+			}
 		}
 
 		else {
@@ -315,7 +356,19 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 			}
 
 			beta = min(beta, bs);
-			if(beta <= alpha) break;
+			if(beta <= alpha) {
+				if(local[i].capture == EMP) {
+					if(!eqmov(local[i], killer[0][ply])) {
+						killer[1][ply] = killer[0][ply];
+						killer[0][ply] = local[i];
+					}
+
+					history[Board[local[i].from]][local[i].to] += depth*depth;
+					if(history[Board[local[i].from]][local[i].to] > 1'000'000) history[Board[local[i].from]][local[i].to] >>= 1;
+				}
+
+				break;
+			}
 		}
 	}
 
@@ -330,12 +383,12 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta) {
 }
 
 // f: first guess
-int mtdf(bool turn, int f, int depth) {
+int mtdf(bool turn, int f, int depth, int ply) {
 	int l = -INF;
 	int r = INF;
 	while(l < r) {
 		int beta = f + (f == l);
-		f = minimax(depth, depth, turn, beta-1, beta);
+		f = minimax(depth, depth, turn, beta-1, beta, ply);
 		if(f < beta) r = f;
 		else l = f;
 	};

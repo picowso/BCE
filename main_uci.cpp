@@ -30,6 +30,7 @@ extern int wkpos, bkpos;
 extern int perft_mm;
 extern u8 castling;
 CMove IND = {0,0,EMP,EMP,0};
+int ply = 0;
 // extern int perft;
 int main() {
 	build_zob();
@@ -107,6 +108,7 @@ int main() {
 			}
 
 			cout << "OMG " << ztable[zob_c] << endl;
+			ply++;
 			printb();
 			// cout << "OMG " << ztable[zob_c] << endl;
 		}
@@ -142,18 +144,25 @@ int main() {
 
 			// Iterative deepening + MTD(f)
 			int firstguess = 10;
-			for(int i = 1 ; i < DEPTH_MAX ; i++) {
+			for(int i = 1 ; i < 7 ; i++) {
 				perft_mm = 0;
 				IND = {0,0,EMP,EMP,0};
 				CMove LIND = IND;
 				auto t0 = chrono::high_resolution_clock::now();
-				// firstguess = mtdf(mv, firstguess, i);
-				firstguess = minimax(i, i, mv);
+				firstguess = mtdf(mv, firstguess, i, ply);
+				// firstguess = minimax(i, i, mv);
 				auto t1 = chrono::high_resolution_clock::now();
 				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
 				u += chrono::duration<double>(t1 - t0).count();
 				cout << u << endl;
-				if(17*u > min({4.5, stab + tb/2, tb})) {
+				if(ply < 10 or ply > 40) {
+					if(2*u > 1.) {
+						cout << i << endl;
+						break;
+					}
+				}
+
+				else if(9*u > 1.) {
 					cout << i << endl;
 					break;
 				}
@@ -167,7 +176,7 @@ int main() {
 			cout << castling << endl;
 			printb();
 			mv ^= 1;
-
+			ply++;
 			// cout << perft << " " << mvs << " " << ind << " OMG " << ztable[zob_c] << endl;
 		}
 	}
