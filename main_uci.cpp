@@ -149,8 +149,8 @@ int main() {
 				IND = {0,0,EMP,EMP,0};
 				CMove LIND = IND;
 				auto t0 = chrono::high_resolution_clock::now();
-				firstguess = mtdf(mv, firstguess, i, ply);
-				// firstguess = minimax(i, i, mv);
+				// firstguess = mtdf(mv, firstguess, i, ply);
+				firstguess = minimax(i, i, mv, -INF, INF, ply);
 				auto t1 = chrono::high_resolution_clock::now();
 				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
 				u += chrono::duration<double>(t1 - t0).count();

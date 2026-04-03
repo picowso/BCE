@@ -192,8 +192,6 @@ int perft_mm = 0;
 int tot = 0;
 extern CMove IND;
 
-
-
 bool eqmov(CMove &a, CMove &b) {
 	return a.from == b.from and a.to == b.to and a.flag == b.flag and a.capture == b.capture and a.promo == b.promo;
 }
@@ -299,27 +297,68 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta, int ply) {
 
 	int oalpha = alpha;
 	int obeta = beta;
-	vector<CMove> local(Moves, Moves + mvs);
+	vector<CMove> ilocal(Moves, Moves + mvs);
 	// for(int i = 0 ; i < mvs ; i++) local[i] = Moves[i];
-	sort(local.begin(), local.end(), [&](const CMove& a, const CMove& b) -> bool{
-		// if(a.from == Bm.from and a.to == Bm.to) return 1;
-		// if(b.from == Bm.from and b.to == Bm.to) return 0;
-		// bool qa = a.from == Bm.from and a.to == Bm.to;
-		// bool qb = b.from == Bm.from and b.to == Bm.to;
-		// if(qa!=qb) return qa;
-		// if(qa==qb) return 0;
-		// int av = Pvals[a.capture];
-		// int bv = Pvals[b.capture];
-		// if(av != bv) return av > bv;
+	// sort(local.begin(), local.end(), [&](const CMove& a, const CMove& b) -> bool{
+	// 	// if(a.from == Bm.from and a.to == Bm.to) return 1;
+	// 	// if(b.from == Bm.from and b.to == Bm.to) return 0;
+	// 	// bool qa = a.from == Bm.from and a.to == Bm.to;
+	// 	// bool qb = b.from == Bm.from and b.to == Bm.to;
+	// 	// if(qa!=qb) return qa;
+	// 	// if(qa==qb) return 0;
+	// 	// int av = Pvals[a.capture];
+	// 	// int bv = Pvals[b.capture];
+	// 	// if(av != bv) return av > bv;
 
-		// int ai = Board[a.from], bi = Board[b.from];
-		// if(ai>5)ai-=6;
-		// if(bi>5)bi-=6;
-		// int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
-		// if(aj != bj) return aj < bj;
-		// return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) < (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
-		return move_score(a, Bm, ply) > move_score(b, Bm, ply);
-	});
+	// 	// int ai = Board[a.from], bi = Board[b.from];
+	// 	// if(ai>5)ai-=6;
+	// 	// if(bi>5)bi-=6;
+	// 	// int aj = bincheck(a.from) * Pvals[ai], bj = bincheck(b.from) * Pvals[bi];
+	// 	// if(aj != bj) return aj < bj;
+	// 	// return (PV[ai][a.from >> 4][a.from & 7] - PV[ai][a.to >> 4][a.to & 7]) < (PV[bi][b.from >> 4][b.from & 7] - PV[bi][b.to >> 4][b.to & 7]);
+	// 	return move_score(a, Bm, ply) > move_score(b, Bm, ply);
+	// });
+
+	// let's try a more cancer approach :3
+	vector<CMove> local;
+	bitset<256> vis;
+	vector<CMove> kl;
+	local.reserve(mvs);
+	kl.reserve(2);
+
+	// TT
+	for(int i = 0 ; i < mvs ; i++) {
+		if(eqmov(ilocal[i], Bm)) {
+			vis.set(i);
+			local.pb(Bm);
+			break;
+		}
+	}
+
+	// captures
+	for(int i = 0 ; i < mvs ; i++) {
+		if(!vis.test(i) and ilocal[i].capture != EMP and Pvals[ilocal[i].capture] != Pvals[Board[ilocal[i].from]]) {
+			vis.set(i);
+			local.pb(ilocal[i]);
+		}
+
+		if(!vis.test(i)) {
+			if(eqmov(ilocal[i], killer[0][ply])) {
+				kl.pb(ilocal[i]);
+				vis.set(i);
+			}
+
+			else if(eqmov(ilocal[i], killer[1][ply])) {
+				kl.pb(ilocal[i]);
+				vis.set(i);
+			}
+		}
+	}
+
+	for(int i = 0 ; i < kl.size() ; i++) local.pb(kl[i]);
+	for(int i = 0 ; i < mvs ; i++) {
+		if(!vis.test(i)) local.pb(ilocal[i]);
+	}
 
 	for(int i = 0 ; i < local.size() ; i++) {
 		domove(local[i]);

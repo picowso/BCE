@@ -14,7 +14,7 @@ a pseudo-functional and kinda unefficient chess engine
 - [X] A FEN parser
 - [X] Transposition table
 - [X] [MTD(f)](https://people.csail.mit.edu/plaat/mtdf.html) implementation
-- [ ] Implement killer heu
-- [ ] Implement history heu
+- [X] Implement killer heu
+- [X] Implement history heu
 - [ ] Implement and train a MLP on [Lichess elite database](https://database.nikonoel.fr/) 
 - [ ] Implement NNUE

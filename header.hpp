@@ -12,6 +12,8 @@
 #include <random>
 #include <chrono>
 #include <cstring>
+#include <bitset>
+#define pb push_back
 #define SETZ(p, i) p = p & ~i;
 #define TT_SIZE 33554432
 #define TT_HASH 33554431
