@@ -101,6 +101,35 @@ void build_zob() {
     }
 }
 
+extern int acc[HL1_SIZE];
+extern int hidden1_w[INPUT_SIZE][HL1_SIZE];
+extern int hidden1_b[HL1_SIZE];
+int calc_nnue_index(int pos) {
+    Piece pc = Board[pos];
+    int sq = (pos >> 4) + pos&7;
+    if(pc > 5) return 64 * (pc - 6) + sq;
+    return 64*6 + 64 * pc + sq;
+}
+
+void reset_acc() {
+    int input[INPUT_SIZE];
+    memset(input, 0, sizeof input);
+    for(int i = 0 ; i < 128 ; i++) {
+        if(Board[i] == EMP or i&0x88) continue;
+        input[calc_nnue_index(i)] = 1;
+    }
+
+    memset(acc, 0, sizeof acc);
+    for(int i = 0 ; i < HL1_SIZE ; i++) {
+        int s = 0;
+        for(int j = 0 ; j < INPUT_SIZE ; j++) {
+            s += hidden1_w[j][i] * input[j];
+        }
+
+        acc[i] = s;
+    }
+}
+
 void build_board() {
     mvs = 0;
     castling = 0xf;
@@ -143,9 +172,10 @@ void build_board() {
 
     // zob_c ^= zobrist_castle[15];
     ztable[zob_c]++;
+    reset_acc();
 }
 
-void build_fromfen(string str) {
+void build_fen(string str) {
     mvs = 0;
     castling = 0xf;
     rb_p = 0;
@@ -170,7 +200,7 @@ void build_fromfen(string str) {
             continue;
         }
 
-        cout << u << endl;
+        // cout << u << endl;
         if(str[i] == 'p') Board[u] = BP;
         else if(str[i] == 'n') Board[u] = BN;
         else if(str[i] == 'b') Board[u] = BB;
@@ -267,6 +297,7 @@ void build_fromfen(string str) {
     }
 
     ztable[zob_c]++;
+    reset_acc();
 }
 
 bool expincheck(bool kc, bool u) {
@@ -536,16 +567,15 @@ void undomove() {
     }
 }
 
+bool baha;
 void AddMove(int from, int to, int flag, Piece promo) {
     // cout << from << " " << to << endl;
     if(from&0x88 or to&0x88) return;
     // Moves[mvs] = {from, to, Board[to], promo, 0};
     CMove m = {from, to, Board[to], promo, flag};
-    bool good = 0;
     domove(m);
-    if(!expincheck(color(to), 0)) {
+    if(!expincheck(baha, 0)) {
         Moves[mvs++] = m;
-        good = 1;
     }
 
     undomove();
@@ -553,6 +583,7 @@ void AddMove(int from, int to, int flag, Piece promo) {
 
 void movegen(bool mv) {
     mvs = 0;
+    baha = mv;
     CMove Lm;
     int kp;
     if(mv) kp = wkpos;

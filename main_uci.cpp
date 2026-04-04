@@ -33,8 +33,12 @@ CMove IND = {0,0,EMP,EMP,0};
 int ply = 0;
 // extern int perft;
 int main() {
+	// build_nnue();
 	build_zob();
 	build_board();
+	// build_fen("6K1/8/8/8/8/8/5q2/6k1 w - - 0 1");
+	// cout << evaluate() << endl;
+	// exit(0);
 	// init_tables();
 	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
 	printb();
@@ -110,7 +114,6 @@ int main() {
 			cout << "OMG " << ztable[zob_c] << endl;
 			ply++;
 			printb();
-			// cout << "OMG " << ztable[zob_c] << endl;
 		}
 
 		else if(inp.substr(0, 2) == "go") {
@@ -155,6 +158,7 @@ int main() {
 				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
 				u += chrono::duration<double>(t1 - t0).count();
 				cout << u << endl;
+				if(i < 3) continue;
 				if(ply < 10 or ply > 40) {
 					if(2*u > 1.) {
 						cout << i << endl;

@@ -225,7 +225,7 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	// }
 
 	// if(ztable[zob_c] >= 3) return 0;
-	auto it = ztable.find(upd(zob_c));
+	auto it = ztable.find(upd(turn));
 	if (it != ztable.end() && it->second >= 3) return 0;
 	int bs = evaluate();
 	if(turn) {
@@ -278,12 +278,16 @@ int minimax(int depth_n, int depth, bool turn, int alpha, int beta, int ply) {
 	if(depth == 0) return quiescence(depth, turn, alpha, beta);
 	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
 	if(ztable[zob_c] >= 3) return 0;
-	auto it = ztable.find(upd(zob_c));
+	auto it = ztable.find(upd(turn));
 	if(it != ztable.end() && it->second >= 3) return 0;
 	int bs = (turn ? -INF - 50 : INF + 50);
 	CMove Bm = {0,0,EMP,EMP,0};
 	int uzob_c = upd(turn);
-	if(retrieve_tb(uzob_c, depth, alpha, beta, bs, Bm)) return bs;
+	if(retrieve_tb(uzob_c, depth, alpha, beta, bs, Bm)) {
+    	if(depth == depth_n) IND = Bm;
+		return bs;
+	}
+	
 	// if(s_table.find({zob_c, depth}) != s_table.end()) return s_table[{zob_c, depth}];
 	// perft_mm++;
 	// bool check = incheck(turn);
