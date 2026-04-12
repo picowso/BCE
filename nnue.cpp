@@ -1,29 +1,26 @@
 // nnue.cpp: the nnue :-)
 #include "header.hpp"
 
-int hidden1_w[INPUT_SIZE][HL1_SIZE];
-int hidden1_b[HL1_SIZE];
-int output_w[HL1_SIZE];
-int output_b;
-int acc[HL1_SIZE];
-const int QA = 255;
-const int QB = 64;
-const int SCALE = 400;
+float hidden1_w[INPUT_SIZE][HL1_SIZE];
+float hidden1_b[HL1_SIZE];
+float output_w[HL1_SIZE];
+float output_b;
+float acc_w[HL1_SIZE]; // white view
+float acc_b[HL1_SIZE]; // black view
 
-int gclamp(int n) {
-	if(n < 0) return 0;
-	if(n > QA) return QA;
-	return n;
-}
+// const int QA = 255;
+// const int QB = 64;
+// const int SCALE = 400;
 
-int act(int n) {
-	n = gclamp(n);
+float act(float n) {
+	if(n <= 0.f) return 0.;
+	if(n >= 1.f) return 1.;
 	return n*n;
 }
 
 // read info from briwats.nnue
-void build_nnue() {
-	ifstream fl("briwats.nnue");
+void build_nnue(string str) {
+	ifstream fl(str);
 	int n, m; fl >> n >> m;
 	if(n != INPUT_SIZE or m != HL1_SIZE) {
 		cout << "nnue data is corrupt vro" << endl;
@@ -32,9 +29,10 @@ void build_nnue() {
 
 	for(int i = 0 ; i < n ; i++) {
 		for(int j = 0 ; j < m ; j++) {
-			double w;
+			float w;
 			fl >> w;
-			hidden1_w[i][j] = round(w * QA);
+			hidden1_w[i][j] = w;
+			// w = round(w * QA);
 			// cout << i << " " << j << " " << hidden1_w[i][j] << endl;
 		}
 	}
@@ -46,9 +44,10 @@ void build_nnue() {
 	}
 
 	for(int i = 0 ; i < n2 ; i++) {
-		double w;
+		float w;
 		fl >> w;
-		hidden1_b[i] = round(w * QA);
+		hidden1_b[i] = w;
+		// w = round(w * QA);
 	}
 
 	int n3; fl >> n3;
@@ -58,35 +57,40 @@ void build_nnue() {
 	}
 
 	for(int i = 0 ; i < n3 ; i++) {
-		double w;
+		float w;
 		fl >> w;
-		output_w[i] = round(w * QB);
+		output_w[i] = w;
+		// round(w * QB)
 	}
 
-	double w;
+	float w;
 	fl >> w;
-	output_b = round(w * SCALE);
-	// acc will be init'ede in build_board.
+	output_b = w;
 }
 
-void acc_add(int x) {
-	for(int i = 0 ; i < HL1_SIZE ; i++) acc[i] += hidden1_w[x][i];
+void accw_add(int x) {
+	for(int i = 0 ; i < HL1_SIZE ; i++) acc_w[i] += hidden1_w[x][i];
 }
 
-void acc_sub(int x) {
-	for(int i = 0 ; i < HL1_SIZE ; i++) acc[i] -= hidden1_w[x][i];
+void accw_sub(int x) {
+	for(int i = 0 ; i < HL1_SIZE ; i++) acc_w[i] -= hidden1_w[x][i];
+}
+
+// show add inverted
+void accb_add(int x) {
+	for(int i = 0 ; i < HL1_SIZE ; i++) acc_b[i] += hidden1_w[x][i];
+}
+
+void accb_sub(int x) {
+	for(int i = 0 ; i < HL1_SIZE ; i++) acc_b[i] -= hidden1_w[x][i];
 }
 
 int evaluation() {
-	long long res = 0;
+	float res = output_b;
 	for(int i = 0 ; i < HL1_SIZE ; i++) {
-		int a = act(acc[i] + hidden1_b[i]);
+		float a = act(acc_w[i] + hidden1_b[i]);
 		res += a * output_w[i];
 	}
 
-	res /= QA;
-	res += output_b;
-	res *= SCALE;
-	res /= QA*QB;
-	return res;
+	return (int)res;
 }

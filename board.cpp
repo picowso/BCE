@@ -101,32 +101,49 @@ void build_zob() {
     }
 }
 
-extern int acc[HL1_SIZE];
-extern int hidden1_w[INPUT_SIZE][HL1_SIZE];
-extern int hidden1_b[HL1_SIZE];
-int calc_nnue_index(int pos) {
+extern float acc_w[HL1_SIZE];
+extern float acc_b[HL1_SIZE];
+extern float hidden1_w[INPUT_SIZE][HL1_SIZE];
+extern float hidden1_b[HL1_SIZE];
+int calc_nnue_index(int pos, bool color_view) {
     Piece pc = Board[pos];
-    int sq = (pos >> 4) + pos&7;
-    if(pc > 5) return 64 * (pc - 6) + sq;
-    return 64*6 + 64 * pc + sq;
-}
-
-void reset_acc() {
-    int input[INPUT_SIZE];
-    memset(input, 0, sizeof input);
-    for(int i = 0 ; i < 128 ; i++) {
-        if(Board[i] == EMP or i&0x88) continue;
-        input[calc_nnue_index(i)] = 1;
+    int sq = 8*(pos >> 4) + (pos&7);
+    
+    // black;
+    bool side = pc>5;
+    if(color_view == 0) {
+        // pc ^= 1;
+        sq ^= 0x70; // flipping for 0x88
     }
 
-    memset(acc, 0, sizeof acc);
+    return side*64*6 + 64 * (pc - side*6) + sq;
+}
+
+// resetting the accumulators (both of them)
+void reset_acc() {
+    int inputw[INPUT_SIZE];
+    int inputb[INPUT_SIZE];
+    memset(inputw, 0, sizeof inputw);
+    memset(inputb, 0, sizeof inputb);
+
+    for(int i = 0 ; i < 128 ; i++) {
+        if(Board[i] == EMP or i&0x88) continue;
+        inputb[calc_nnue_index(i, 0)] = 1;
+        inputb[calc_nnue_index(i, 1)] = 1;
+    }
+
+    // memset(acc_w, 0, sizeof acc_w);
+    for(int i = 0 ; i < HL1_SIZE ; i++) acc_w[i] = 0.f;
+    for(int i = 0 ; i < HL1_SIZE ; i++) acc_b[i] = 0.f;
     for(int i = 0 ; i < HL1_SIZE ; i++) {
-        int s = 0;
+        float sw = 0.f, sb = 0.f;
         for(int j = 0 ; j < INPUT_SIZE ; j++) {
-            s += hidden1_w[j][i] * input[j];
+            sw += hidden1_w[j][i] * inputw[j];
+            sb += hidden1_w[j][i] * inputb[j];
         }
 
-        acc[i] = s;
+        acc_w[i] = sw;
+        acc_b[i] = sb;
     }
 }
 
