@@ -75,9 +75,9 @@ bool bincheck(int i);
 u64 upd(bool turn);
 
 // NNUE:
-void accw_sub();
-void accw_add();
-void accb_sub();
-void accb_add();
+void acc_sub(int x);
+void acc_add(int x);
 void build_nnue(string str);
-int evaluation();
+int evaluation(bool pers);
+void reset_acc();
+int calc_nnue_index(int pos, bool color_view);

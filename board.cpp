@@ -101,51 +101,10 @@ void build_zob() {
     }
 }
 
-extern float acc_w[HL1_SIZE];
-extern float acc_b[HL1_SIZE];
-extern float hidden1_w[INPUT_SIZE][HL1_SIZE];
-extern float hidden1_b[HL1_SIZE];
-int calc_nnue_index(int pos, bool color_view) {
-    Piece pc = Board[pos];
-    int sq = 8*(pos >> 4) + (pos&7);
-    
-    // black;
-    bool side = pc>5;
-    if(color_view == 0) {
-        // pc ^= 1;
-        sq ^= 0x70; // flipping for 0x88
-    }
-
-    return side*64*6 + 64 * (pc - side*6) + sq;
-}
-
-// resetting the accumulators (both of them)
-void reset_acc() {
-    int inputw[INPUT_SIZE];
-    int inputb[INPUT_SIZE];
-    memset(inputw, 0, sizeof inputw);
-    memset(inputb, 0, sizeof inputb);
-
-    for(int i = 0 ; i < 128 ; i++) {
-        if(Board[i] == EMP or i&0x88) continue;
-        inputb[calc_nnue_index(i, 0)] = 1;
-        inputb[calc_nnue_index(i, 1)] = 1;
-    }
-
-    // memset(acc_w, 0, sizeof acc_w);
-    for(int i = 0 ; i < HL1_SIZE ; i++) acc_w[i] = 0.f;
-    for(int i = 0 ; i < HL1_SIZE ; i++) acc_b[i] = 0.f;
-    for(int i = 0 ; i < HL1_SIZE ; i++) {
-        float sw = 0.f, sb = 0.f;
-        for(int j = 0 ; j < INPUT_SIZE ; j++) {
-            sw += hidden1_w[j][i] * inputw[j];
-            sb += hidden1_w[j][i] * inputb[j];
-        }
-
-        acc_w[i] = sw;
-        acc_b[i] = sb;
-    }
-}
+// extern float acc_w[HL1_SIZE];
+// extern float acc_b[HL1_SIZE];
+// extern float hidden1_w[INPUT_SIZE][HL1_SIZE];
+// extern float hidden1_b[HL1_SIZE];
 
 void build_board() {
     mvs = 0;
@@ -471,6 +430,8 @@ void domove(CMove Move) {
     }
 
     // zob_c ^= 4[castling];
+    acc_sub(Move.from);
+    if(Board[Move.to] != EMP) acc_sub(Move.to);
     zob(Move.from);
     zob(Move.to);
     // zob_c ^= zobrist[Move.from][Board[Move.from]];
@@ -481,6 +442,7 @@ void domove(CMove Move) {
     else Board[Move.to] = Board[Move.from];
     Board[Move.from] = EMP;
 
+    acc_add(Move.to);
     zob(Move.from);
     zob(Move.to);
     // zob_c ^= zobrist[Move.to][Board[Move.to]];
@@ -491,6 +453,7 @@ void domove(CMove Move) {
         int cs = Move.to + pdir[!mvc];
         // if(roll) rollback[rb_p-1].capture = Board[cs];
         zob(cs);
+        acc_sub(cs);
         Board[cs] = EMP;
         zob(cs);
     }
@@ -498,10 +461,13 @@ void domove(CMove Move) {
     // short castling
     if(Move.flag == 2) {
         Piece m = Board[Move.to+1];
+        acc_sub(Move.to+1);
         zob(Move.to+1);
         zob(Move.to-1);
+
         Board[Move.to+1] = EMP;
         Board[Move.to-1] = m;
+        acc_add(Move.to-1);
         zob(Move.to+1);
         zob(Move.to-1);
     }
@@ -509,10 +475,13 @@ void domove(CMove Move) {
     // long castling
     if(Move.flag == 3) {
         Piece m = Board[Move.to-2];
+        acc_sub(Move.to-2);
         zob(Move.to-2);
         zob(Move.to+1);
+
         Board[Move.to-2] = EMP;
         Board[Move.to+1] = m;
+        acc_add(Move.to+1);
         zob(Move.to-2);
         zob(Move.to+1);
     }
@@ -535,6 +504,7 @@ void undomove() {
     // zob_c ^= zobrist_castle[castling];
     ztable[zob_c]--;
 
+    acc_sub(rb.to);
     if(Board[rb.to] == WK) wkpos = rb.from;
     else if(Board[rb.to] == BK) bkpos = rb.from;
 
@@ -546,7 +516,9 @@ void undomove() {
     if(rb.promo != EMP) Board[rb.from] = (Piece)(6*(!color(rb.to)));
     else Board[rb.from] = Board[rb.to];
     Board[rb.to] = rb.capture;
-
+    
+    acc_add(rb.from);
+    if(rb.capture != EMP) acc_add(rb.to);
     zob(rb.from);
     zob(rb.to);
     // zob_c ^= zobrist[rb.to][Board[rb.to]];
@@ -556,6 +528,8 @@ void undomove() {
     if(rb.flag == 1) {
         bool mvcol = color(rb.from);
         int cs = rb.to + pdir[!mvcol];
+        acc_add(cs);
+
         zob(cs);
         Board[cs] = (Piece)(6*mvcol);
         zob(cs);
@@ -564,10 +538,13 @@ void undomove() {
     // short castling
     if(rb.flag == 2) {
         Piece m = Board[rb.to-1];
+        acc_sub(rb.to-1);
         zob(rb.to-1);
         zob(rb.to+1);
+
         Board[rb.to+1] = m;
         Board[rb.to-1] = EMP;
+        acc_add(rb.to+1);
         zob(rb.to+1);
         zob(rb.to-1);
     }
@@ -575,10 +552,14 @@ void undomove() {
     // long castling
     if(rb.flag == 3) {
         Piece m = Board[rb.to+1];
+        acc_sub(rb.to+1);
         zob(rb.to-2);
         zob(rb.to+1);
+
         Board[rb.to-2] = m;
         Board[rb.to+1] = EMP;
+
+        acc_add(rb.to-2);
         zob(rb.to-2);
         zob(rb.to+1);
     }

@@ -227,7 +227,7 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	// if(ztable[zob_c] >= 3) return 0;
 	auto it = ztable.find(upd(turn));
 	if (it != ztable.end() && it->second >= 3) return 0;
-	int bs = evaluate();
+	int bs = evaluation(turn);
 	if(turn) {
 		if(bs >= beta) return beta;
 		alpha = max(alpha, bs);
@@ -277,7 +277,7 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 int minimax(int depth_n, int depth, bool turn, int alpha, int beta, int ply) {
 	if(depth == 0) return quiescence(depth, turn, alpha, beta);
 	// if(perft_mm > ITER_LIMIT) return quiescence(turn, alpha, beta);
-	if(ztable[zob_c] >= 3) return 0;
+	// if(ztable[zob_c] >= 3) return 0;
 	auto it = ztable.find(upd(turn));
 	if(it != ztable.end() && it->second >= 3) return 0;
 	int bs = (turn ? -INF - 50 : INF + 50);

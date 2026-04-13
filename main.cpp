@@ -33,12 +33,13 @@ CMove IND = {0,0,EMP,EMP,0};
 int ply = 0;
 // extern int perft;
 int main() {
-	// build_nnue("briwats2.nnue");
+	build_nnue("briwats2.nnue");
 	build_zob();
 	build_board();
 	// string fen; cin >> fen;
+	// int n; cin >> n;
 	// build_fen(fen);
-	// cout << evaluation() << endl;
+	// cout << evaluation(n) << endl;
 	// exit(0);
 
 	// init_tables();
