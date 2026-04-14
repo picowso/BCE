@@ -27,10 +27,11 @@ Make sure you have a [lichess](lichess.org) account, and challenge the BOT via t
 - Implemented and trained a MLP on [Lichess elite database](https://database.nikonoel.fr/)
 - Move generation (working chess)
 - Basic evaluation function
+- Basic NNUE
 
-### TODO:
+<!-- ### TODO:
 
 - [ ] Make sure the nnue works (use some basic FENs)
 - [ ] Write the article about NNUE
 - [ ] Use the nnue :) (shockers)
-- [ ] Output bucket nnue
+- [ ] Output bucket nnue -->
