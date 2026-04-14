@@ -33,14 +33,14 @@ CMove IND = {0,0,EMP,EMP,0};
 int ply = 0;
 // extern int perft;
 int main() {
-	build_nnue("briwats2.nnue");
+	build_nnue("briwats4.nnue");
 	build_zob();
 	build_board();
-	// string fen; cin >> fen;
-	// int n; cin >> n;
-	// build_fen(fen);
-	// cout << evaluation(n) << endl;
-	// exit(0);
+	string fen; cin >> fen;
+	int n; cin >> n;
+	build_fen(fen);
+	cout << evaluation(n) << endl;
+	exit(0);
 
 	// init_tables();
 	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
@@ -120,6 +120,7 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
+			cout << evaluation(1) << endl;
 			int stab = 0;
 			double u = 0.;
 			string w = "";
@@ -149,32 +150,34 @@ int main() {
 			double tb = ttb / 1000.;
 
 			// Iterative deepening + MTD(f)
-			int firstguess = 10;
-			for(int i = 1 ; i < 7 ; i++) {
-				perft_mm = 0;
-				IND = {0,0,EMP,EMP,0};
-				CMove LIND = IND;
-				auto t0 = chrono::high_resolution_clock::now();
-				// firstguess = mtdf(mv, firstguess, i, ply);
-				firstguess = minimax(i, i, mv, -INF, INF, ply);
-				auto t1 = chrono::high_resolution_clock::now();
-				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
-				u += chrono::duration<double>(t1 - t0).count();
-				cout << u << endl;
-				if(i < 3) continue;
-				if(ply < 10 or ply > 40) {
-					if(2*u > 1.) {
-						cout << i << endl;
-						break;
-					}
-				}
+			// int firstguess = 10;
+			// for(int i = 1 ; i < 6 ; i++) {
+			// 	perft_mm = 0;
+			// 	IND = {0,0,EMP,EMP,0};
+			// 	CMove LIND = IND;
+			// 	auto t0 = chrono::high_resolution_clock::now();
+			// 	// firstguess = mtdf(mv, firstguess, i, ply);
+			// 	firstguess = minimax(i, i, mv, -INF, INF, ply);
+			// 	auto t1 = chrono::high_resolution_clock::now();
+			// 	if(LIND.from != IND.from or LIND.to != IND.to) stab++;
+			// 	u += chrono::duration<double>(t1 - t0).count();
+			// 	cout << u << endl;
+			// 	if(i < 3) continue;
+			// 	if(ply < 10 or ply > 40) {
+			// 		if(2*u > 1.) {
+			// 			cout << i << endl;
+			// 			break;
+			// 		}
+			// 	}
 
-				else if(9*u > 1.) {
-					cout << i << endl;
-					break;
-				}
-			}
+			// 	else if(9*u > 1.) {
+			// 		cout << i << endl;
+			// 		break;
+			// 	}
+			// }
 
+			const int DEPTH = 4;
+			minimax(DEPTH, DEPTH, mv, -INF, INF, ply);
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
 			cout << mvs << endl;

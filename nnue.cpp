@@ -22,12 +22,13 @@ int calc_nnue_index(int pos, bool color_view) {
     Piece pc = Board[pos];
     int sq = 8*(pos >> 4) + (pos&7);
     
-    // 1=black;
-    if(color_view == 0) {
-        // pc ^= 1;
-        pc = inverse(pc);
-        sq ^= 0x70; // flipping for 0x88
-    }
+    // // 1=white;
+    // if(color_view == 0) {
+    //     // pc ^= 1;
+    //     pc = inverse(pc);
+    //     sq ^= 56; // flipping for 0x88
+    //     // nvm bug bruh, this isn't 0x88
+    // }
     
     bool side = pc>5;
     return side*64*6 + 64 * (pc - 6 * side) + sq;
@@ -62,9 +63,10 @@ void reset_acc() {
 }
 
 float act(float n) {
-	if(n <= 0.f) return 0.;
-	if(n >= 1.f) return 1.;
-	return n*n;
+	// if(n <= 0.f) return 0.;
+	// if(n >= 1.f) return 1.;
+	// return n*n;
+	return max(0.f, n);
 }
 
 // read info from briwats.nnue
@@ -121,20 +123,20 @@ void build_nnue(string str) {
 // x is given in 0x88
 void acc_add(int x) {
 	for(int i = 0 ; i < HL1_SIZE ; i++) {
-		acc_w[i] += hidden1_w[calc_nnue_index(x, 0)][i];
-		acc_b[i] += hidden1_w[calc_nnue_index(x, 1)][i];
+		acc_w[i] += hidden1_w[calc_nnue_index(x, 1)][i];
+		acc_b[i] += hidden1_w[calc_nnue_index(x, 0)][i];
 	}
 }
 
 void acc_sub(int x) {
 	for(int i = 0 ; i < HL1_SIZE ; i++) {
-		acc_w[i] -= hidden1_w[calc_nnue_index(x, 0)][i];
-		acc_b[i] -= hidden1_w[calc_nnue_index(x, 1)][i];
+		acc_w[i] -= hidden1_w[calc_nnue_index(x, 1)][i];
+		acc_b[i] -= hidden1_w[calc_nnue_index(x, 0)][i];
 	}
 }
 
 int evaluation(bool pers) {
-	// reset_acc();
+	reset_acc();
 	float res = output_b;
 	for(int i = 0 ; i < HL1_SIZE ; i++) {
 		float a;
@@ -143,5 +145,6 @@ int evaluation(bool pers) {
 		res += a * output_w[i];
 	}
 
-	return (int)(100'000'000*res);
+	if(!pers) return -(int)(1'000'000*res);
+	return (int)(1'000'000*res);
 }

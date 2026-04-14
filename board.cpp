@@ -528,10 +528,11 @@ void undomove() {
     if(rb.flag == 1) {
         bool mvcol = color(rb.from);
         int cs = rb.to + pdir[!mvcol];
-        acc_add(cs);
+        // acc_add(cs);
 
         zob(cs);
         Board[cs] = (Piece)(6*mvcol);
+        acc_add(cs);
         zob(cs);
     }
 
