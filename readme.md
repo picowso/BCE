@@ -1,10 +1,8 @@
 # Briwats Chess Engine
 
-BriwatsCE is a UCI chess engine rated at 2014 ELO, the rating was determined by using cutechess to play BriwatsCE against multiple version of [Stash chess engine](https://www.chessprogramming.org/Stash).
+BriwatsCE is a UCI NNUE chess engine, it uses a 0x88 board representation and can either use MTD(f) or normal MiniMax with alpha beta (and TT!) for the search, i implemented chess from scratch which was a real pain to implement!
 
-It uses 0x88 board representation and can either use MTD(f) or normal AlphaBetaWithMemory (aka alpha beta with transposition table) for the search, i implemented chess from scratch which was a pain to implement!
-
-Currently as of version 0.1 the NNUE is trained but not currently plugged to the engine, so playing against this version is playing against a hand-made evaluation function instead of a NNUE one! i'll probably re-train the MLP to consider multiple other features too (which side to play, current ply...)
+The NNUE is trained on the engine's self-play, it's still not stable and can produce catastrophic or random moves in some uncommon moves since it's only trained on ~30 Million games, this number (30M) should increase in future releases!
 
 ## How to play:
 
@@ -16,6 +14,7 @@ Make sure you have a [lichess](lichess.org) account, and challenge the BOT via t
 
 ### Features:
 
+- Basic NNUE
 - Minimax and Quiescence search
 - UCI integration
 - Time management + Iterative deepening
@@ -27,7 +26,6 @@ Make sure you have a [lichess](lichess.org) account, and challenge the BOT via t
 - Implemented and trained a MLP on [Lichess elite database](https://database.nikonoel.fr/)
 - Move generation (working chess)
 - Basic evaluation function
-- Basic NNUE
 
 <!-- ### TODO:
 
