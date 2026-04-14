@@ -32,8 +32,9 @@ extern u8 castling;
 CMove IND = {0,0,EMP,EMP,0};
 int ply = 0;
 // extern int perft;
+const string netpath = "nets/briwats4.nnue";
 int main() {
-	build_nnue("briwats4.nnue");
+	build_nnue(netpath);
 	build_zob();
 	build_board();
 	// string fen; cin >> fen;
