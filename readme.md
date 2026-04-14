@@ -6,7 +6,7 @@ The NNUE is trained on the engine's self-play, it's still not stable and can pro
 
 ## How to play:
 
-Make sure you have a [lichess](lichess.org) account, and challenge the BOT via this link:
+Make sure you have a [Lichess](https://lichess.org) account, and challenge the BOT via this link:
 
 [https://lichess.org/@/Briwats](https://lichess.org/@/Briwats)
 
