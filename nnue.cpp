@@ -145,6 +145,6 @@ int evaluation(bool pers) {
 		res += a * output_w[i];
 	}
 
-	if(!pers) return -(int)(1'000'000*res);
-	return (int)(1'000'000*res);
+	if(!pers) return -(int)(100'000'000*res);
+	return (int)(100'000'000*res);
 }

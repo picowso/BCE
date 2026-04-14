@@ -36,11 +36,11 @@ int main() {
 	build_nnue("briwats4.nnue");
 	build_zob();
 	build_board();
-	string fen; cin >> fen;
-	int n; cin >> n;
-	build_fen(fen);
-	cout << evaluation(n) << endl;
-	exit(0);
+	// string fen; cin >> fen;
+	// int n; cin >> n;
+	// build_fen(fen);
+	// cout << evaluation(n) << endl;
+	// exit(0);
 
 	// init_tables();
 	// build_fromfen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
