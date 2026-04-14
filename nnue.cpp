@@ -136,7 +136,7 @@ void acc_sub(int x) {
 }
 
 int evaluation(bool pers) {
-	reset_acc();
+	// reset_acc();
 	float res = output_b;
 	for(int i = 0 ; i < HL1_SIZE ; i++) {
 		float a;
