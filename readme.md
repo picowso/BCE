@@ -1,8 +1,8 @@
 # Briwats Chess Engine
 
-BriwatsCE is a UCI NNUE chess engine, it uses a 0x88 board representation and can either use MTD(f) or normal MiniMax with alpha beta (and TT!) for the search, i implemented chess from scratch which was a real pain to implement!
+BriwatsCE is a UCI NNUE chess engine, it uses a 0x88 board representation and can either use MTD(f) or normal MiniMax with alpha beta (and TT!) for the search, i implemented chess from scratch which was a pain to code!
 
-The NNUE is trained on the engine's self-play, it's still not stable and can produce catastrophic or random moves in some uncommon moves since it's only trained on ~30 Million games, this number (30M) should increase in future releases!
+The NNUE is trained on the engine's self-play, it's still not stable and can produce catastrophic or random moves in some uncommon positions since it's only trained on ~30 Million games, this number (30M) should increase in future releases!
 
 ## How to play:
 
