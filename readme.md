@@ -31,9 +31,11 @@ Make sure you have a [Lichess](https://lichess.org) account, and challenge the B
 
 Make sure to have `git`, `make` and `g++` installed.
 
-`git clone https://github.com/picowso/BCE`
-`cd BCE`
-`make`
+```bash
+git clone https://github.com/picowso/BCE`
+cd BCE
+make
+```
 
 now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot) or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
 
