@@ -23,12 +23,12 @@ int calc_nnue_index(int pos, bool color_view) {
     int sq = 8*(pos >> 4) + (pos&7);
     
     // // 1=white;
-    // if(color_view == 0) {
-    //     // pc ^= 1;
-    //     pc = inverse(pc);
-    //     sq ^= 56; // flipping for 0x88
-    //     // nvm bug bruh, this isn't 0x88
-    // }
+    if(color_view == 0) {
+        // pc ^= 1;
+        pc = inverse(pc);
+        sq ^= 56; // flipping for 0x88
+        // nvm bug bruh, this isn't 0x88
+    }
     
     bool side = pc>5;
     return side*64*6 + 64 * (pc - 6 * side) + sq;
@@ -66,7 +66,12 @@ float act(float n) {
 	// if(n <= 0.f) return 0.;
 	// if(n >= 1.f) return 1.;
 	// return n*n;
-	return max(0.f, n);
+	// return max(0.f, n);
+	return clamp(n, 0.f, 1.f);
+}
+
+float sigmoid(float n) {
+	return 1 / (1 + expf(-n));
 }
 
 // read info from briwats.nnue
@@ -145,6 +150,7 @@ int evaluation(bool pers) {
 		res += a * output_w[i];
 	}
 
-	if(!pers) return -(int)(100'000'000*res);
-	return (int)(100'000'000*res);
+	res = sigmoid(res);
+	if(pers) return -(int)(100'000*res);
+	return (int)(100'000*res);
 }

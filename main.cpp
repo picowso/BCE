@@ -121,7 +121,7 @@ int main() {
 		}
 
 		else if(inp.substr(0, 2) == "go") {
-			cout << evaluation(1) << endl;
+			// cout << evaluation(1) << endl;
 			int stab = 0;
 			double u = 0.;
 			string w = "";
@@ -151,34 +151,34 @@ int main() {
 			double tb = ttb / 1000.;
 
 			// Iterative deepening + MTD(f)
-			// int firstguess = 10;
-			// for(int i = 1 ; i < 6 ; i++) {
-			// 	perft_mm = 0;
-			// 	IND = {0,0,EMP,EMP,0};
-			// 	CMove LIND = IND;
-			// 	auto t0 = chrono::high_resolution_clock::now();
-			// 	// firstguess = mtdf(mv, firstguess, i, ply);
-			// 	firstguess = minimax(i, i, mv, -INF, INF, ply);
-			// 	auto t1 = chrono::high_resolution_clock::now();
-			// 	if(LIND.from != IND.from or LIND.to != IND.to) stab++;
-			// 	u += chrono::duration<double>(t1 - t0).count();
-			// 	cout << u << endl;
-			// 	if(i < 3) continue;
-			// 	if(ply < 10 or ply > 40) {
-			// 		if(2*u > 1.) {
-			// 			cout << i << endl;
-			// 			break;
-			// 		}
-			// 	}
+			int firstguess = 10;
+			for(int i = 1 ; i < 6 ; i++) {
+				perft_mm = 0;
+				IND = {0,0,EMP,EMP,0};
+				CMove LIND = IND;
+				auto t0 = chrono::high_resolution_clock::now();
+				// firstguess = mtdf(mv, firstguess, i, ply);
+				firstguess = minimax(i, i, mv, -INF, INF, ply);
+				auto t1 = chrono::high_resolution_clock::now();
+				if(LIND.from != IND.from or LIND.to != IND.to) stab++;
+				u += chrono::duration<double>(t1 - t0).count();
+				cout << u << endl;
+				if(i < 3) continue;
+				if(ply < 10 or ply > 40) {
+					if(2*u > 1.) {
+						cout << i << endl;
+						break;
+					}
+				}
 
-			// 	else if(9*u > 1.) {
-			// 		cout << i << endl;
-			// 		break;
-			// 	}
-			// }
+				else if(9*u > 1.) {
+					cout << i << endl;
+					break;
+				}
+			}
 
-			const int DEPTH = 4;
-			minimax(DEPTH, DEPTH, mv, -INF, INF, ply);
+			// const int DEPTH = 3;
+			// minimax(DEPTH, DEPTH, mv, -INF, INF, ply);
 			// cout << IND << endl;
 			cout << "bestmove " << conv(IND) << endl;
 			cout << mvs << endl;

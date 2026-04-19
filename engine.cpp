@@ -138,35 +138,35 @@ void set_tb(u64 key, int score, int depth, NType flag, CMove Bm) {
 
 extern int wkpos, bkpos;
 const int Pvals[13] = {100, 280, 320, 479, 929, 0, 100, 280, 320, 479, 929, 0, 0};
-// int evaluate() {
-//     int score_w = 0, score_b = 0;
-//     int mat_w = 0, mat_b = 0;
-//     for(int i = 0 ; i < 128 ; i++) {
-//     	if(i&0x88) continue;
-//         if(Board[i] == EMP) continue;
-// 		int r = i >> 4;
-//         int f = i & 7;
-//         if(color(i)) {
-//         	mat_w += Pvals[Board[i]];
-//         	score_w += PV[Board[i]][r][f];
-//         }
+int evaluate() {
+    int score_w = 0, score_b = 0;
+    int mat_w = 0, mat_b = 0;
+    for(int i = 0 ; i < 128 ; i++) {
+    	if(i&0x88) continue;
+        if(Board[i] == EMP) continue;
+		int r = i >> 4;
+        int f = i & 7;
+        if(color(i)) {
+        	mat_w += Pvals[Board[i]];
+        	score_w += PV[Board[i]][r][f];
+        }
 
-//         else {
-//         	mat_b += Pvals[Board[i]];
-//         	score_b += PV[Board[i]-6][7-r][f];
-//         }
-//     }
+        else {
+        	mat_b += Pvals[Board[i]];
+        	score_b += PV[Board[i]-6][7-r][f];
+        }
+    }
 
-//     // endgame!
-//     // if(min(mat_w, mat_b) <= 1321) {
-//     // 	score_w -= PV[5][wkpos >> 4][wkpos & 7];
-//     // 	score_b -= PV[5][bkpos >> 4][bkpos & 7];
-//     // 	score_w += PV[6][wkpos >> 4][wkpos & 7];
-//     // 	score_b += PV[6][bkpos >> 4][bkpos & 7];
-//     // }
+    // endgame!
+    // if(min(mat_w, mat_b) <= 1321) {
+    // 	score_w -= PV[5][wkpos >> 4][wkpos & 7];
+    // 	score_b -= PV[5][bkpos >> 4][bkpos & 7];
+    // 	score_w += PV[6][wkpos >> 4][wkpos & 7];
+    // 	score_b += PV[6][bkpos >> 4][bkpos & 7];
+    // }
 
-//     return mat_w - mat_b + score_w - score_b;
-// }
+    return mat_w - mat_b + score_w - score_b;
+}
 
 // int perft = 0;
 int perft(int depth, bool turn) {
@@ -227,7 +227,9 @@ int quiescence(int depth, bool turn, int alpha, int beta) {
 	// if(ztable[zob_c] >= 3) return 0;
 	auto it = ztable.find(upd(turn));
 	if (it != ztable.end() && it->second >= 3) return 0;
-	int bs = evaluation(turn);
+	// int bs = evaluation(turn); // to use NNUE
+	int bs = evaluate(); // to use HCE, best
+
 	if(turn) {
 		if(bs >= beta) return beta;
 		alpha = max(alpha, bs);
