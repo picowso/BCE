@@ -37,7 +37,9 @@ cd BCE
 make
 ```
 
-now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot) or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
+now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot/wiki/How-to-Install).
+
+Or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
 
 ## sub-projects
 
