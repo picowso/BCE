@@ -32,7 +32,7 @@ Make sure you have a [Lichess](https://lichess.org) account, and challenge the B
 Make sure to have `git`, `make` and `g++` installed.
 
 ```bash
-git clone https://github.com/picowso/BCE`
+git clone https://github.com/picowso/BCE
 cd BCE
 make
 ```
