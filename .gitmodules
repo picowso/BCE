@@ -1,0 +1,6 @@
+[submodule "_lichess"]
+	path = _lichess
+	url = https://github.com/picowso/BCE-lichess
+[submodule "_train"]
+	path = _train
+	url = https://github.com/picowso/BCE-train

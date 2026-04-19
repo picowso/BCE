@@ -12,6 +12,16 @@ Make sure you have a [Lichess](https://lichess.org) account, and challenge the B
 
 ---
 
+## How to replicate:
+
+Make sure to have `git`, `make` and `g++` installed.
+
+`git clone https://github.com/picowso/BCE`
+`cd BCE`
+`make`
+
+now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot) or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
+
 ### Features:
 
 - Basic NNUE
@@ -27,9 +37,15 @@ Make sure you have a [Lichess](https://lichess.org) account, and challenge the B
 - Move generation (working chess)
 - Basic evaluation function
 
+## sub-projects
+
+[BCE-train](https://github.com/picowso/BCE-train): To train the NNUE, not that the NNUE is still not good.
+
+[BCE-lichess](https://github.com/picowso/BCE-lichess): To have the bot on Lichess, this is a fork of [lichess-bot](https://github.com/lichess-bot-devs/lichess-bot).
+
 <!-- ### TODO:
 
-- [ ] Make sure the nnue works (use some basic FENs)
+- [X] Make sure the nnue works (use some basic FENs)
 - [ ] Write the article about NNUE
-- [ ] Use the nnue :) (shockers)
+- [X] Use the nnue :) (shockers)
 - [ ] Output bucket nnue -->
