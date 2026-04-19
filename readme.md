@@ -10,18 +10,6 @@ Make sure you have a [Lichess](https://lichess.org) account, and challenge the B
 
 [https://lichess.org/@/Briwats](https://lichess.org/@/Briwats)
 
----
-
-## How to replicate:
-
-Make sure to have `git`, `make` and `g++` installed.
-
-`git clone https://github.com/picowso/BCE`
-`cd BCE`
-`make`
-
-now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot) or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
-
 ### Features:
 
 - Basic NNUE
@@ -36,6 +24,18 @@ now you'll have a binary named "briwats" which is UCI-compatible, you can either
 - Implemented and trained a MLP on [Lichess elite database](https://database.nikonoel.fr/)
 - Move generation (working chess)
 - Basic evaluation function
+
+---
+
+## How to replicate:
+
+Make sure to have `git`, `make` and `g++` installed.
+
+`git clone https://github.com/picowso/BCE`
+`cd BCE`
+`make`
+
+now you'll have a binary named "briwats" which is UCI-compatible, you can either use `BCE-lichess` and import your own configurations to have your own bot on [Lichess](https://lichess.org), [see here on how to do that](https://github.com/lichess-bot-devs/lichess-bot) or use it locally using GUIs like [Cute Chess](https://cutechess.com/) which is what i personally use, just plug the binary in the "Tools" section and run it.
 
 ## sub-projects
 
